@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Chrome Audio Capture",
-  "description": "This extension captures the audio on the current tab and saves the output file on your computer when the capture is complete.",
+  "description": "This extension captures the audio on the current tab and saves the output file on your computer when the capture is complete",
   "version": "1.0",
 
   "browser_action": {
@@ -10,10 +10,28 @@
     "default_popup": "popup.html",
     "default_title": "Open Chrome Audio Capture interface"
   },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
   "permissions": [
     "tabCapture",
     "activeTab",
     "downloads",
     "https://ajax.googleapis.com/"
-  ]
+  ],
+  "commands": {
+    "start": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      },
+      "description": "Start Capture"
+    },
+    "stop": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X"
+      },
+      "description": "Stop Capture"
+    }
+  }
 }

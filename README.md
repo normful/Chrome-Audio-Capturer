@@ -10,7 +10,7 @@ This Chrome extension will allow users to capture any audio playing on the curre
 With this extension, users will be able to:
 
 - [ ] Have a basic interface to start and stop capturing audio
-- [ ] Choose a location on their hard drive or Google Drive to save the audio
+- [ ] Download the resulting file to the chrome Downloads folder
 - [ ] Able to see an indication to see whether or not a capture is happening
 
 ###Wireframes
@@ -42,7 +42,7 @@ To display the menu and content, there will be two files:
 - A way to capture audio into some kind of data that is stored in the browser temporarily
 - A way to display the current status of the capture
 
-**Day 4**: Work on turning the audio data into a file that can be saved on the computer. By the end of the day, I will have: 
+**Day 4**: Work on turning the audio data into a file that can be saved on the computer. By the end of the day, I will have:
 
 - A way to convert the audio data into a common audio format such as .wav or .mp3
 - A way to save this file on the computer or cloud
