@@ -89,7 +89,6 @@ class Recorder {
 }
 
 const audioCapture = () => {
-  let mediaRecorder;
   chrome.tabCapture.capture({audio: true}, (stream) => {
     let startTabId;
     chrome.tabs.query({active:true, currentWindow: true}, (tabs) => startTabId = tabs[0].id)
@@ -129,9 +128,15 @@ const audioCapture = () => {
         }
       })
     }
-    let audio = new Audio();
-    audio.srcObject = liveStream;
-    audio.play();
+    chrome.storage.sync.get({
+      muteTab: false
+    }, (options) => {
+      if(!options.muteTab) {
+        let audio = new Audio();
+        audio.srcObject = liveStream;
+        audio.play();
+      }
+    });
   });
 }
 
@@ -146,7 +151,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 const startCapture = function() {
-  chrome.tabs.query({active: true}, (tabs) => {
+  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     if(!sessionStorage.getItem(tabs[0].id)) {
       sessionStorage.setItem(tabs[0].id, true);
       audioCapture();

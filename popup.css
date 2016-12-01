@@ -1,5 +1,5 @@
-body, h2 {
-  font-family: sans-serif;
+body, h2, button {
+  font-family: Ubuntu, sans-serif;
 }
 #status {
   margin: 10px auto;
@@ -29,4 +29,23 @@ button {
   margin: 10px auto;
   width: 200px;
   height: 40px;
+}
+
+#save-location {
+  font-family: sans-serif;
+  white-space: nowrap;
+  font-style: italic;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: sans-serif;
+}
+
+.links p {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
 }

@@ -1,48 +1,79 @@
-## Chrome Audio Capturer
+#Chrome Audio Capture
 
-###Background
+Chrome Audio Capture is a Chrome extension that allows users to capture any audio playing on the current tab. Multiple tabs can be captured simultaneously. Completed captures will be downloaded to the chrome downloads folder and will be saved as .wav files. Users will have the option to mute tabs that are currently being captured.
 
-This Chrome extension will allow users to capture any audio playing on the current active tab and save the audio into a file.
+Chrome Audio Capture is available in the [Chrome Store](https://chrome.google.com/webstore/detail/chrome-audio-capture/kfokdmfpdnokpmpbjhjbcabgligoelgp)
+
+Hotkeys:
+ - Ctrl/Command + Shift + S: Start capture on current tab
+ - Ctrl/Command + Shift + X: Stop capture on current tab
+
+ The main interface of the extension
+
+![start]
+
+[start]: ./docs/CAC_ss.png
+
+Interface during capture
+
+![capturing]
+
+[capturing]: ./docs/CAC_cap_ss.png
 
 
-###Functionality & MVP
+##Implementation Details
 
-With this extension, users will be able to:
+### Capturing Audio
+To capture the audio in the current tab, I used the chrome `tabCapture` API to obtain a `MediaStream` object of the current tab. Next I used the `MediaStream` object to initialize a recorder that will encode the stream into a .wav file using the `Recorder.js` library.
 
-- [ ] Have a basic interface to start and stop capturing audio
-- [ ] Download the resulting file to the chrome Downloads folder
-- [ ] Able to see an indication to see whether or not a capture is happening
+```javascript
+chrome.tabCapture.capture({audio: true}, (stream) => {
+  let startTabId;
+  chrome.tabs.query({active:true, currentWindow: true}, (tabs) => startTabId = tabs[0].id)
+  const liveStream = stream;
+  const audioCtx = new AudioContext();
+  const source = audioCtx.createMediaStreamSource(stream);
+  let mediaRecorder = new Recorder(source);
+```
 
-###Wireframes
+### Tab Management
+To allow audio capture on multiple tabs simultaneously, I stored the `tabId` of each tab being captured into the `sessionStorage` object. When a `stopCapture` command is issued, the extension will check whether the current tab is the same as the tab that the capture was started on, and only stop the specific instance of the capture on the current tab.
 
-![Wireframe](/docs/AudioCapture.png)
+```javascript
+const stopCapture = function() {
+  let endTabId;
+  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    endTabId = tabs[0].id;
+    if(mediaRecorder && startTabId === endTabId){
+      mediaRecorder.stop();
+      mediaRecorder.exportWAV((blob)=> {
+        const audioURL = window.URL.createObjectURL(blob);
+        const now = new Date(Date.now());
+        const currentDate = now.toDateString();
+        chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture`})
+      })
+```
 
-###Technologies & Implementation
+### Audio Playback During Capture
+By default, using `tabCapture` will mute the audio on the current tab in order for the capture to take place. To allow audio to continue playing during the capture, I created an `Audio` object which has its source linked to the ongoing stream that is being captured. In the options menu, users will have the option to keep the tab muted or unmuted during the capture.
 
-This extension will be implemented using the standard Chrome extension technology: Javascript, HTML, and CSS. There will be a `manifest.json` and `package.json` as with every extension. In addition, there will be two scripts for handling the logic of the extension:
+```javascript
+chrome.storage.sync.get({
+  muteTab: false
+}, (options) => {
+  if(!options.muteTab) {
+    let audio = new Audio();
+    audio.srcObject = liveStream;
+    audio.play();
+  }
+});
+```
 
--`capture.js`: will handle the logic for capture the audio from the chrome tab.
--`save.js`: will handle the logic for saving the audio files on the hard drive or cloud.
+![options]
 
-To display the menu and content, there will be two files:
+[options]: ./docs/CAC_options_ss.png
 
-- `menu.html`: the file that renders and displays the menu for audio capturing.
-- `menu.css`: the file that contains css for the menu.
+###Future Work
 
-###Implmentation Timeline
-
-**Day 1**: Learn the basics of how to create a chrome extension and have the basic files and structure of the program completed. (`package.json` and `manifest.json`)
-
-**Day 2**: Work on the main menu of the extension and all the visual displays that is necessary for the extension to function properly. By the end of the day, I will have:
-
-- A visually-appealing menu with buttons that will link to functions of the extension
-
-**Day 3**: Work on getting the audio capture to work. By the end of the day, I will have:
-
-- A way to capture audio into some kind of data that is stored in the browser temporarily
-- A way to display the current status of the capture
-
-**Day 4**: Work on turning the audio data into a file that can be saved on the computer. By the end of the day, I will have:
-
-- A way to convert the audio data into a common audio format such as .wav or .mp3
-- A way to save this file on the computer or cloud
+- [ ] Having more options for output file format
+- [ ] Ability to pause and resume captures
