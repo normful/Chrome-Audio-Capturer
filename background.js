@@ -33,7 +33,7 @@ class Recorder {
       };
 
       source.connect(this.node);
-      this.node.connect(this.context.destination);    //this should not be necessary
+      this.node.connect(this.context.destination);
       const workerURL = chrome.extension.getURL("worker.js");
       this.worker = new Worker(workerURL);
       this.worker.postMessage({
@@ -92,7 +92,7 @@ const audioCapture = () => {
   let mediaRecorder;
   chrome.tabCapture.capture({audio: true}, (stream) => {
     let startTabId;
-    chrome.tabs.query({active:true}, (tabs) => startTabId = tabs[0].id)
+    chrome.tabs.query({active:true, currentWindow: true}, (tabs) => startTabId = tabs[0].id)
     const liveStream = stream;
     const audioCtx = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
@@ -101,38 +101,63 @@ const audioCapture = () => {
     mediaRecorder.record();
     chrome.commands.onCommand.addListener(function onStop(command) {
       if (command === "stop") {
-        let endTabId;
-        chrome.tabs.query({active: true}, (tabs) => {
-          endTabId = tabs[0].id;
-          if(mediaRecorder && startTabId === endTabId){
-            mediaRecorder.stop();
-            mediaRecorder.exportWAV((blob)=> {
-              const audioURL = window.URL.createObjectURL(blob);
-              const now = new Date(Date.now());
-              const currentDate = now.toDateString();
-              chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture`})
-            })
-            audioCtx.close();
-            liveStream.getAudioTracks()[0].stop();
-            mediaRecorder = null;
-            sessionStorage.removeItem(endTabId);
-          }
-        })
+        stopCapture();
       }
-    })
+    });
+    chrome.runtime.onMessage.addListener((request) => {
+      if(request === "stopCapture") {
+        stopCapture();
+      }
+    });
+    const stopCapture = function() {
+      let endTabId;
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        endTabId = tabs[0].id;
+        if(mediaRecorder && startTabId === endTabId){
+          mediaRecorder.stop();
+          mediaRecorder.exportWAV((blob)=> {
+            const audioURL = window.URL.createObjectURL(blob);
+            const now = new Date(Date.now());
+            const currentDate = now.toDateString();
+            chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture`})
+          })
+          audioCtx.close();
+          liveStream.getAudioTracks()[0].stop();
+          mediaRecorder = null;
+          sessionStorage.removeItem(endTabId);
+          chrome.runtime.sendMessage({captureStopped: endTabId});
+        }
+      })
+    }
     let audio = new Audio();
     audio.srcObject = liveStream;
     audio.play();
   });
 }
 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.currentTab && sessionStorage.getItem(request.currentTab)) {
+    sendResponse(true);
+  } else if (request.currentTab){
+    sendResponse(false);
+  } else if (request === "startCapture") {
+    startCapture();
+  }
+});
+
+const startCapture = function() {
+  chrome.tabs.query({active: true}, (tabs) => {
+    if(!sessionStorage.getItem(tabs[0].id)) {
+      sessionStorage.setItem(tabs[0].id, true);
+      audioCapture();
+      chrome.runtime.sendMessage({captureStarted: tabs[0].id});
+    }
+  });
+};
+
+
 chrome.commands.onCommand.addListener((command) => {
   if (command === "start") {
-    chrome.tabs.query({active: true}, (tabs) => {
-      if(!sessionStorage.getItem(tabs[0].id)) {
-        sessionStorage.setItem(tabs[0].id, true);
-        audioCapture();
-      }
-    });
+    startCapture();
   }
-})
+});

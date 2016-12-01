@@ -1,0 +1,32 @@
+body, h2 {
+  font-family: sans-serif;
+}
+#status {
+  margin: 10px auto;
+  text-align: center;
+  font-size: 20px;
+  white-space: nowrap;
+}
+
+ul {
+  font-size: 16px;
+  font-weight: bold;
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  font-size: 14px;
+  font-weight: normal;
+  white-space: nowrap;
+  margin: 0 0 0 5px;
+}
+
+button {
+  font-weight: bold;
+  font-size: 18px;
+  display: block;
+  margin: 10px auto;
+  width: 200px;
+  height: 40px;
+}
