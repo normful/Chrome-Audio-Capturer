@@ -15,7 +15,7 @@ With this extension, users will be able to:
 
 ###Wireframes
 
-![Wireframe](/docs/AudioCapture.png)
+![Wireframe](/AudioCapture.png)
 
 ###Technologies & Implementation
 
