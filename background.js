@@ -1,41 +1,138 @@
-const audioCapture = (chunks) => {
+class Recorder {
+
+  constructor(source, cfg) {
+      this.config = {
+          bufferLen: 4096,
+          numChannels: 2,
+          mimeType: 'audio/wav'
+      };
+
+      this.recording = false;
+
+      this.callbacks = {
+          getBuffer: [],
+          exportWAV: []
+      };
+      Object.assign(this.config, cfg);
+      this.context = source.context;
+      this.node = (this.context.createScriptProcessor ||
+      this.context.createJavaScriptNode).call(this.context,
+          this.config.bufferLen, this.config.numChannels, this.config.numChannels);
+
+      this.node.onaudioprocess = (e) => {
+          if (!this.recording) return;
+
+          var buffer = [];
+          for (var channel = 0; channel < this.config.numChannels; channel++) {
+              buffer.push(e.inputBuffer.getChannelData(channel));
+          }
+          this.worker.postMessage({
+              command: 'record',
+              buffer: buffer
+          });
+      };
+
+      source.connect(this.node);
+      this.node.connect(this.context.destination);    //this should not be necessary
+      const workerURL = chrome.extension.getURL("worker.js");
+      this.worker = new Worker(workerURL);
+      this.worker.postMessage({
+          command: 'init',
+          config: {
+              sampleRate: this.context.sampleRate,
+              numChannels: this.config.numChannels
+          }
+      });
+
+      this.worker.onmessage = (e) => {
+          let cb = this.callbacks[e.data.command].pop();
+          if (typeof cb == 'function') {
+              cb(e.data.data);
+          }
+      };
+  }
+
+
+  record() {
+      this.recording = true;
+  }
+
+  stop() {
+      this.recording = false;
+  }
+
+  clear() {
+      this.worker.postMessage({command: 'clear'});
+  }
+
+  getBuffer(cb) {
+      cb = cb || this.config.callback;
+      if (!cb) throw new Error('Callback not set');
+
+      this.callbacks.getBuffer.push(cb);
+
+      this.worker.postMessage({command: 'getBuffer'});
+  }
+
+  exportWAV(cb, mimeType) {
+      mimeType = mimeType || this.config.mimeType;
+      cb = cb || this.config.callback;
+      if (!cb) throw new Error('Callback not set');
+
+      this.callbacks.exportWAV.push(cb);
+
+      this.worker.postMessage({
+          command: 'exportWAV',
+          type: mimeType
+      });
+  }
+}
+
+const audioCapture = () => {
   let mediaRecorder;
   chrome.tabCapture.capture({audio: true}, (stream) => {
+    let startTabId;
+    chrome.tabs.query({active:true}, (tabs) => startTabId = tabs[0].id)
     const liveStream = stream;
-    mediaRecorder = new MediaRecorder(stream);
-    // const audioContainer = document.getElementById("audio-result");
-    mediaRecorder.ondataavailable = (e) => {
-      chunks.push(e.data);
-    }
-    mediaRecorder.onstop = () => {
-      console.log(chunks);
-      const blob = new Blob(chunks, {'type' : 'audio/ogg; codecs=opus'})
-      const audioURL = window.URL.createObjectURL(blob);
-      chrome.downloads.download({url: audioURL, filename: "sound.wav"})
-      liveStream.getAudioTracks()[0].stop();
-    }
-    mediaRecorder.start();
-    chrome.commands.onCommand.addListener((command) => {
+    const audioCtx = new AudioContext();
+    const source = audioCtx.createMediaStreamSource(stream);
+    let mediaRecorder = new Recorder(source);
+
+    mediaRecorder.record();
+    chrome.commands.onCommand.addListener(function onStop(command) {
       if (command === "stop") {
-        mediaRecorder.stop();
+        let endTabId;
+        chrome.tabs.query({active: true}, (tabs) => {
+          endTabId = tabs[0].id;
+          if(mediaRecorder && startTabId === endTabId){
+            mediaRecorder.stop();
+            mediaRecorder.exportWAV((blob)=> {
+              const audioURL = window.URL.createObjectURL(blob);
+              const now = new Date(Date.now());
+              const currentDate = now.toDateString();
+              chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture`})
+            })
+            audioCtx.close();
+            liveStream.getAudioTracks()[0].stop();
+            mediaRecorder = null;
+            sessionStorage.removeItem(endTabId);
+          }
+        })
       }
     })
     let audio = new Audio();
     audio.srcObject = liveStream;
     audio.play();
-    // let audio = document.createElement('audio');
-    // audioContainer.appendChild(audio);
-    // audio.srcObject = liveStream;
-    // audio.onloadedmetadata = (e) => {
-    //   audio.play();
-    // }
   });
-  return mediaRecorder;
 }
 
 chrome.commands.onCommand.addListener((command) => {
   if (command === "start") {
-    let chunks = [];
-    let capture = audioCapture(chunks);
+    chrome.tabs.query({active: true}, (tabs) => {
+      if(!sessionStorage.getItem(tabs[0].id)) {
+        sessionStorage.setItem(tabs[0].id, true);
+        audioCapture();
+      }
+    });
   }
 })

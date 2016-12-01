@@ -14,11 +14,17 @@
     "scripts": ["background.js"],
     "persistent": true
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["worker.js"]
+    }
+  ],
   "permissions": [
     "tabCapture",
     "activeTab",
     "downloads",
-    "https://ajax.googleapis.com/"
+    "storage"
   ],
   "commands": {
     "start": {
