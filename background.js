@@ -118,7 +118,7 @@ const audioCapture = () => {
             const audioURL = window.URL.createObjectURL(blob);
             const now = new Date(Date.now());
             const currentDate = now.toDateString();
-            chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture`})
+            chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.wav`})
           })
           audioCtx.close();
           liveStream.getAudioTracks()[0].stop();
