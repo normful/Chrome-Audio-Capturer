@@ -1,11 +1,23 @@
 body, h2, button {
   font-family: Ubuntu, sans-serif;
 }
-#status {
+#status, #timeRem {
   margin: 10px auto;
   text-align: center;
   font-size: 20px;
   white-space: nowrap;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid darkred;
+}
+
+.header img {
+  height: 64px;
+  margin: 0 20px 0 0;
 }
 
 ul {
@@ -31,10 +43,11 @@ button {
   height: 40px;
 }
 
-#save-location {
+.extra {
   font-family: sans-serif;
   white-space: nowrap;
   font-style: italic;
+  margin: 3px;
 }
 
 .links {

@@ -6,7 +6,14 @@
   </head>
   <body>
     <div class="header"><img src="./icon.png"/> <h1>Chrome Audio Capture</h1></div>
-    <h2>Options</h2>
-    <input type="checkbox" id="mute"><label for="mute">Mute tabs that are being captured</label>
+    <div class="inner">
+      <h2>Options</h2>
+      <ul class="options-list">
+        <li><input type="checkbox" id="mute"><label for="mute">Mute tabs that are being captured</label></li>
+        <li class="time"><label for "maxTime">Maximum capture time <p class="limit">(enter value from 1 - 25)</p>: </label><input type="text" id="maxTime"> min(s)</li>
+      </ul>
+    </div>
+    <button id="save">Save settings</button>
+    <div id="status"></div>
   </body>
 </html>

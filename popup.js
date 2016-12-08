@@ -1,3 +1,5 @@
+let interval;
+let timeLeft;
 const startButton = document.createElement("button");
 startButton.innerHTML = "Start Capture"
 startButton.onclick = () => {chrome.runtime.sendMessage("startCapture")};
@@ -8,31 +10,71 @@ stopButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
 
 const displayStatus = function() {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    chrome.runtime.sendMessage({currentTab: tabs[0].id}, (response) => {
-      const status = document.getElementById("status");
-      const buttons = document.getElementById("buttons");
-      if(response) {
-        status.innerHTML = "Tab is currently being captured";
-        buttons.appendChild(stopButton);
-      } else {
-        buttons.appendChild(startButton);
-      }
-    });
+    const status = document.getElementById("status");
+    const timeRem = document.getElementById("timeRem");
+    const buttons = document.getElementById("buttons");
+    if(tabs[0].url.toLowerCase().includes("youtube")) {
+      status.innerHTML = "Capture is disabled on this site due to copyright";
+    } else {
+      chrome.runtime.sendMessage({currentTab: tabs[0].id}, (response) => {
+        if(response) {
+          chrome.storage.sync.get({
+            maxTime: 1500000
+          }, (options) => {
+            timeLeft = options.maxTime - (Date.now() - response)
+            status.innerHTML = "Tab is currently being captured";
+            timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
+            interval = setInterval(() => {
+              timeLeft = timeLeft - 1000;
+              timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
+            }, 1000);
+          });
+          buttons.appendChild(stopButton);
+        } else {
+          buttons.appendChild(startButton);
+        }
+      });
+    }
   });
+}
+
+const parseTime = function(time) {
+  let minutes = Math.floor((time/1000)/60);
+  let seconds = Math.floor((time/1000) % 60);
+  if (minutes < 10) {
+    minutes = '0' + minutes;
+  }
+  if (seconds < 10) {
+    seconds = '0' + seconds;
+  }
+  return `${minutes}:${seconds}`
 }
 
 chrome.runtime.onMessage.addListener((request, sender) => {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     const status = document.getElementById("status");
+    const timeRem = document.getElementById("timeRem");
     const buttons = document.getElementById("buttons");
     if(request.captureStarted && request.captureStarted === tabs[0].id) {
-      status.innerHTML = "Tab is currently being captured";
+      chrome.storage.sync.get({
+        maxTime: 1500000
+      }, (options) => {
+        timeLeft = options.maxTime - (Date.now() - request.startTime)
+        status.innerHTML = "Tab is currently being captured";
+        timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
+        interval = setInterval(() => {
+          timeLeft = timeLeft - 1000;
+          timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
+        }, 1000);
+      });
       buttons.appendChild(stopButton);
       buttons.removeChild(startButton);
     } else if(request.captureStopped && request.captureStopped === tabs[0].id) {
       status.innerHTML = "";
       buttons.appendChild(startButton);
       buttons.removeChild(stopButton);
+      timeRem.innerHTML = "";
+      clearInterval(interval);
     }
   });
 });

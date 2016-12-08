@@ -21,3 +21,43 @@ h2 {
 label {
   font-size: 16px;
 }
+
+.inner {
+  margin-left: 40px;
+}
+
+.options-list {
+  padding: 0;
+  list-style: none;
+}
+
+.options-list li {
+  padding: 10px;
+}
+
+.time {
+  font-size: 16px;
+}
+
+.limit {
+  display: inline-block;
+  margin: 0;
+  font-size: 12px;
+}
+
+#save {
+  font-size: 16px;
+  margin-left: 50px;
+}
+
+#status {
+  color: red;
+  margin-top: 8px;
+  margin-left: 50px;
+  font-size: 14px;
+}
+
+#maxTime {
+  width: 30px;
+  text-align: center;
+}

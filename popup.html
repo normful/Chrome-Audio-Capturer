@@ -5,13 +5,16 @@
     <link rel="stylesheet" href="popup.css" type="text/css">
   </head>
   <body>
+    <div class="header"><img src="./icon.png"/> <h1>Chrome Audio Capture</h1></div>
     <div id="status"></div>
+    <div id="timeRem"></div>
     <div id="buttons"></div>
     <ul> Hotkeys:
       <li>Ctrl/Command + Shift + S to start capture on current tab</li>
       <li>Ctrl/Command + Shift + X to stop capture on current tab</li>
     </ul>
-    <p id="save-location">Completed captures will be saved to the Chrome downloads folder</p>
+    <p class="extra">Currently the max capture time is 25 minutes due to chrome memory constraints</p>
+    <p class="extra">Completed captures will be saved to the Chrome downloads folder</p>
     <div class="links">
       <p id="options">Options</p>
       <p id="GitHub">GitHub</p>

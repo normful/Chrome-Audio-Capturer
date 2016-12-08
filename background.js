@@ -91,6 +91,7 @@ class Recorder {
 const audioCapture = () => {
   chrome.tabCapture.capture({audio: true}, (stream) => {
     let startTabId;
+    let timeout;
     chrome.tabs.query({active:true, currentWindow: true}, (tabs) => startTabId = tabs[0].id)
     const liveStream = stream;
     const audioCtx = new AudioContext();
@@ -101,11 +102,13 @@ const audioCapture = () => {
     chrome.commands.onCommand.addListener(function onStop(command) {
       if (command === "stop") {
         stopCapture();
+        clearTimeout(timeout);
       }
     });
     chrome.runtime.onMessage.addListener((request) => {
       if(request === "stopCapture") {
         stopCapture();
+        clearTimeout(timeout);
       }
     });
     const stopCapture = function() {
@@ -129,6 +132,11 @@ const audioCapture = () => {
       })
     }
     chrome.storage.sync.get({
+      maxTime: 1500000
+    }, (options) => {
+      timeout = setTimeout(stopCapture, options.maxTime);
+    });
+    chrome.storage.sync.get({
       muteTab: false
     }, (options) => {
       if(!options.muteTab) {
@@ -142,7 +150,7 @@ const audioCapture = () => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.currentTab && sessionStorage.getItem(request.currentTab)) {
-    sendResponse(true);
+    sendResponse(sessionStorage.getItem(request.currentTab));
   } else if (request.currentTab){
     sendResponse(false);
   } else if (request === "startCapture") {
@@ -152,10 +160,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 const startCapture = function() {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    if(!sessionStorage.getItem(tabs[0].id)) {
-      sessionStorage.setItem(tabs[0].id, true);
-      audioCapture();
-      chrome.runtime.sendMessage({captureStarted: tabs[0].id});
+    if(tabs[0].url.toLowerCase().includes("youtube")) {
+      chrome.tabs.create({url: "error.html"});
+    } else {
+      if(!sessionStorage.getItem(tabs[0].id)) {
+        sessionStorage.setItem(tabs[0].id, Date.now());
+        audioCapture();
+        chrome.runtime.sendMessage({captureStarted: tabs[0].id, startTime: Date.now()});
+      }
     }
   });
 };
