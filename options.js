@@ -14,13 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
   mute.onchange = () => {
     status.innerHTML = "";
   }
-  
+
   maxTime.onchange = () => {
     status.innerHTML = "";
     if(maxTime.value > 25) {
       maxTime.value = 25;
     } else if (maxTime.value < 1) {
       maxTime.value = 1;
+    } else if (typeof(maxTime.value)!= "number") {
+      maxTime.value = 25;
     }
   }
   save.onclick = () => {
