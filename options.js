@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
       maxTime.value = 20;
     } else if (maxTime.value < 1) {
       maxTime.value = 1;
-    } else if (typeof(maxTime.value)!= "number") {
+    } else if (isNaN(maxTime.value)) {
       maxTime.value = 20;
     }
   }
