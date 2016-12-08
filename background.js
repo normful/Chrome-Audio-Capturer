@@ -132,9 +132,13 @@ const audioCapture = () => {
       })
     }
     chrome.storage.sync.get({
-      maxTime: 1500000
+      maxTime: 1200000
     }, (options) => {
-      timeout = setTimeout(stopCapture, options.maxTime);
+      let time = options.maxTime;
+      if(time > 1200000) {
+        time = 1200000
+      }
+      timeout = setTimeout(stopCapture, time);
     });
     chrome.storage.sync.get({
       muteTab: false

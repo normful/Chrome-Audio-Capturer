@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = document.getElementById('status');
   chrome.storage.sync.get({
     muteTab: false,
-    maxTime: 1500000
+    maxTime: 1200000
   }, (options) => {
     mute.checked = options.muteTab;
     maxTime.value = options.maxTime/60000
@@ -17,12 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   maxTime.onchange = () => {
     status.innerHTML = "";
-    if(maxTime.value > 25) {
-      maxTime.value = 25;
+    if(maxTime.value > 20) {
+      maxTime.value = 20;
     } else if (maxTime.value < 1) {
       maxTime.value = 1;
     } else if (typeof(maxTime.value)!= "number") {
-      maxTime.value = 25;
+      maxTime.value = 20;
     }
   }
   save.onclick = () => {

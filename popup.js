@@ -19,9 +19,16 @@ const displayStatus = function() {
       chrome.runtime.sendMessage({currentTab: tabs[0].id}, (response) => {
         if(response) {
           chrome.storage.sync.get({
-            maxTime: 1500000
+            maxTime: 1200000
           }, (options) => {
-            timeLeft = options.maxTime - (Date.now() - response)
+            if(options.maxTime > 1200000) {
+              chrome.storage.sync.set({
+                maxTime: 1200000
+              });
+              timeLeft = 1200000 - (Date.now() - response)
+            } else {
+              timeLeft = options.maxTime - (Date.now() - response)
+            }
             status.innerHTML = "Tab is currently being captured";
             timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
             interval = setInterval(() => {
@@ -57,9 +64,16 @@ chrome.runtime.onMessage.addListener((request, sender) => {
     const buttons = document.getElementById("buttons");
     if(request.captureStarted && request.captureStarted === tabs[0].id) {
       chrome.storage.sync.get({
-        maxTime: 1500000
+        maxTime: 1200000
       }, (options) => {
-        timeLeft = options.maxTime - (Date.now() - request.startTime)
+        if(options.maxTime > 1200000) {
+          chrome.storage.sync.set({
+            maxTime: 1200000
+          });
+          timeLeft = 1200000 - (Date.now() - request.startTime)
+        } else {
+          timeLeft = options.maxTime - (Date.now() - request.startTime)
+        }
         status.innerHTML = "Tab is currently being captured";
         timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
         interval = setInterval(() => {
