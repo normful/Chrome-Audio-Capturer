@@ -3,7 +3,7 @@
 
   "name": "Chrome Audio Capture",
   "description": "This extension captures the audio on the current tab and saves the output file on your computer when the capture is complete",
-  "version": "1.0.5",
+  "version": "1.0.6",
 
   "browser_action": {
     "default_icon": "icon.png",
@@ -25,7 +25,7 @@
     "start": {
       "suggested_key": {
         "default": "Ctrl+Shift+S",
-        "mac": "Command+Shift+S"
+        "mac": "Command+Shift+U"
       },
       "description": "Start Capture"
     },
