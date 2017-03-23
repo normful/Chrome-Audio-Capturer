@@ -1,4 +1,4 @@
-#Chrome Audio Capture
+# Chrome Audio Capture
 
 Chrome Audio Capture is a Chrome extension that allows users to capture any audio playing on the current tab. Multiple tabs can be captured simultaneously. Completed captures will be downloaded to the chrome downloads folder and will be saved as .wav files. Users will have the option to mute tabs that are currently being captured.
 
@@ -21,7 +21,7 @@ Interface during capture
 [capturing]: ./docs/CAC_cap_ss.png
 
 
-##Implementation Details
+## Implementation Details
 
 ### Capturing Audio
 To capture the audio in the current tab, I used the chrome `tabCapture` API to obtain a `MediaStream` object of the current tab. Next I used the `MediaStream` object to initialize a recorder that will encode the stream into a .wav file using the `Recorder.js` library.
@@ -73,7 +73,7 @@ chrome.storage.sync.get({
 
 [options]: ./docs/CAC_options_ss.png
 
-###Future Work
+### Future Work
 
 - [ ] Having more options for output file format
 - [ ] Ability to pause and resume captures
