@@ -1,59 +1,173 @@
+var extend = function() {
+  var target = arguments[0],
+      sources = [].slice.call(arguments, 1);
+  for (var i = 0; i < sources.length; ++i) {
+    var src = sources[i];
+    for (key in src) {
+      var val = src[key];
+      target[key] = typeof val === "object"
+        ? extend(typeof target[key] === "object" ? target[key] : {}, val)
+        : val;
+    }
+  }
+  return target;
+};
+
 class Recorder {
 
   constructor(source, configs) {
-      this.context = sourceNode.context;
-      if (this.context.createScriptProcessor == null)
-        this.context.createScriptProcessor = this.context.createJavaScriptNode;
-      this.input = this.context.createGain();
-      sourceNode.connect(this.input);
-      this.buffer = [];
-      this.initWorker();
+    extend(this, CONFIGS, configs || {});
+    this.context = sourceNode.context;
+    if (this.context.createScriptProcessor == null)
+      this.context.createScriptProcessor = this.context.createJavaScriptNode;
+    this.input = this.context.createGain();
+    sourceNode.connect(this.input);
+    this.buffer = [];
+    this.initWorker();
   }
 
   isRecording() {
     return this.processor != null;
   }
 
-  setEncoding() {
+  setEncoding(encoding) {
     if(!this.isRecording() && this.encoding !== encoding) {
         this.encoding = encoding;
         this.initWorker();
     }
   }
 
-  record() {
-      this.recording = true;
+  setOptions(options) {
+    if (!this.isRecording()) {
+      extend(this.options, options);
+      this.worker.postMessage({ command: "options", options: this.options});
+    }
   }
 
-  stop() {
-      this.recording = false;
-  }
-
-  clear() {
-      this.worker.postMessage({command: 'clear'});
-  }
-
-  getBuffer(cb) {
-      cb = cb || this.config.callback;
-      if (!cb) throw new Error('Callback not set');
-
-      this.callbacks.getBuffer.push(cb);
-
-      this.worker.postMessage({command: 'getBuffer'});
-  }
-
-  exportWAV(cb, mimeType) {
-      mimeType = mimeType || this.config.mimeType;
-      cb = cb || this.config.callback;
-      if (!cb) throw new Error('Callback not set');
-
-      this.callbacks.exportWAV.push(cb);
-
+  startRecording() {
+    if(!this.isRecording()) {
+      let numChannels = this.numChannels;
+          buffer = this.buffer;
+          worker = this.worker;
+      this.processor = this.context.createScriptProcessor(
+        this.options.bufferSize,
+        this.numChannels, this.numChannels);
+      this.input.connect(this.processor);
+      this.processor.connect(this.context.destination);
+      this.processor.onaudioprocess = function(event) {
+        for (var ch = 0; ch < numChannels; ++ch)
+          buffer[ch] = event.inputBuffer.getChannelData(ch);
+        worker.postMessage({ command: "record", buffer: buffer });
+      };
       this.worker.postMessage({
-          command: 'exportWAV',
-          type: mimeType
+        command: "start",
+        bufferSize: this.processor.bufferSize
       });
+      this.startTime = Date.now();
+    }
   }
+
+  cancelRecording() {
+    if(this.isRecording()) {
+      this.input.disconnect();
+      this.processor.disconnect();
+      delete this.processor;
+      this.worker.postMessage({ command: "cancel" });
+    }
+  }
+
+  finishRecording: function() {
+    if (this.isRecording()) {
+      this.input.disconnect();
+      this.processor.disconnect();
+      delete this.processor;
+      this.worker.postMessage({ command: "finish" });
+    }
+  }
+
+  cancelEncoding: function() {
+    if (this.options.encodeAfterRecord)
+      if (!this.isRecording())
+        this.onEncodingCanceled(this);
+        this.initWorker();
+      }
+  }
+
+  initWorker() {
+    if (this.worker != null)
+      this.worker.terminate();
+    this.onEncoderLoading(this, this.encoding);
+    this.worker = new Worker(this.workerDir + WORKER_FILE[this.encoding]);
+    let _this = this;
+    this.worker.onmessage = function(event) {
+      let data = event.data;
+      switch (data.command) {
+        case "loaded":
+          _this.onEncoderLoaded(_this, _this.encoding);
+          break;
+        case "timeout":
+          _this.onTimeout(_this);
+          break;
+        case "progress":
+          _this.onEncodingProgress(_this, data.progress);
+          break;
+        case "complete":
+          _this.onComplete(_this, data.blob);
+          break;
+        case "error":
+          _this.error(data.message);
+      }
+    };
+    this.worker.postMessage({
+      command: "init",
+      config: {
+        sampleRate: this.context.sampleRate,
+        numChannels: this.numChannels
+      },
+      options: this.options
+    });
+  }
+
+  onEncoderLoading(recorder, encoding) {}
+  onEncoderLoaded(recorder, encoding) {}
+  onTimeout(recorder) { recorder.finishRecording(); }
+  onEncodingProgress(recorder, progress) {}
+  onEncodingCanceled(recorder) {}
+  onComplete(recorder, blob) {}
+
+  // record() {
+  //     this.recording = true;
+  // }
+  //
+  // stop() {
+  //     this.recording = false;
+  // }
+  //
+  // clear() {
+  //     this.worker.postMessage({command: 'clear'});
+  // }
+  //
+  // getBuffer(cb) {
+  //     cb = cb || this.config.callback;
+  //     if (!cb) throw new Error('Callback not set');
+  //
+  //     this.callbacks.getBuffer.push(cb);
+  //
+  //     this.worker.postMessage({command: 'getBuffer'});
+  // }
+  //
+  // exportWAV(cb, mimeType) {
+  //     mimeType = mimeType || this.config.mimeType;
+  //     cb = cb || this.config.callback;
+  //     if (!cb) throw new Error('Callback not set');
+  //
+  //     this.callbacks.exportWAV.push(cb);
+  //
+  //     this.worker.postMessage({
+  //         command: 'exportWAV',
+  //         type: mimeType
+  //     });
+  // }
 }
 
 const audioCapture = () => {
