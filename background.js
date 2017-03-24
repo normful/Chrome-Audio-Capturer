@@ -1,55 +1,13 @@
 class Recorder {
 
-  constructor(source, cfg) {
-      this.config = {
-          bufferLen: 4096,
-          numChannels: 2,
-          mimeType: 'audio/wav'
-      };
-
-      this.recording = false;
-
-      this.callbacks = {
-          getBuffer: [],
-          exportWAV: []
-      };
-      Object.assign(this.config, cfg);
-      this.context = source.context;
-      this.node = (this.context.createScriptProcessor ||
-      this.context.createJavaScriptNode).call(this.context,
-          this.config.bufferLen, this.config.numChannels, this.config.numChannels);
-
-      this.node.onaudioprocess = (e) => {
-          if (!this.recording) return;
-
-          var buffer = [];
-          for (var channel = 0; channel < this.config.numChannels; channel++) {
-              buffer.push(e.inputBuffer.getChannelData(channel));
-          }
-          this.worker.postMessage({
-              command: 'record',
-              buffer: buffer
-          });
-      };
-
-      source.connect(this.node);
-      this.node.connect(this.context.destination);
-      const workerURL = chrome.extension.getURL("worker.js");
-      this.worker = new Worker(workerURL);
-      this.worker.postMessage({
-          command: 'init',
-          config: {
-              sampleRate: this.context.sampleRate,
-              numChannels: this.config.numChannels
-          }
-      });
-
-      this.worker.onmessage = (e) => {
-          let cb = this.callbacks[e.data.command].pop();
-          if (typeof cb == 'function') {
-              cb(e.data.data);
-          }
-      };
+  constructor(source, configs) {
+      this.context = sourceNode.context;
+      if (this.context.createScriptProcessor == null)
+        this.context.createScriptProcessor = this.context.createJavaScriptNode;
+      this.input = this.context.createGain();
+      sourceNode.connect(this.input);
+      this.buffer = [];
+      this.initWorker();
   }
 
 
