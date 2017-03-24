@@ -10,6 +10,16 @@ class Recorder {
       this.initWorker();
   }
 
+  isRecording() {
+    return this.processor != null;
+  }
+
+  setEncoding() {
+    if(!this.isRecording() && this.encoding !== encoding) {
+        this.encoding = encoding;
+        this.initWorker();
+    }
+  }
 
   record() {
       this.recording = true;
