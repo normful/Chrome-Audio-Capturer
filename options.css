@@ -45,6 +45,10 @@ label {
   font-size: 12px;
 }
 
+.radioChoice {
+  margin-left: 15px;
+}
+
 #save {
   font-size: 16px;
   margin-left: 50px;
