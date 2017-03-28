@@ -13,15 +13,49 @@ var extend = function() {
   return target;
 };
 
+var WORKER_FILE = {
+  wav: "WebAudioRecorderWav.js",
+  ogg: "WebAudioRecorderOgg.js",
+  mp3: "WebAudioRecorderMp3.js"
+};
+
+// default configs
+var CONFIGS = {
+  workerDir: "/workers/",     // worker scripts dir (end with /)
+  numChannels: 2,     // number of channels
+  encoding: "wav",    // encoding (can be changed at runtime)
+
+  // runtime options
+  options: {
+    timeLimit: 300,           // recording time limit (sec)
+    encodeAfterRecord: false, // process encoding after recording
+    progressInterval: 1000,   // encoding progress report interval (millisec)
+    bufferSize: undefined,    // buffer size (use browser default)
+
+    // encoding-specific options
+    wav: {
+      mimeType: "audio/wav"
+    },
+    ogg: {
+      mimeType: "audio/ogg",
+      quality: 0.5            // (VBR only): quality = [-0.1 .. 1]
+    },
+    mp3: {
+      mimeType: "audio/mpeg",
+      bitRate: 160            // (CBR only): bit rate = [64 .. 320]
+    }
+  }
+};
+
 class Recorder {
 
   constructor(source, configs) {
     extend(this, CONFIGS, configs || {});
-    this.context = sourceNode.context;
+    this.context = source.context;
     if (this.context.createScriptProcessor == null)
       this.context.createScriptProcessor = this.context.createJavaScriptNode;
     this.input = this.context.createGain();
-    sourceNode.connect(this.input);
+    source.connect(this.input);
     this.buffer = [];
     this.initWorker();
   }
@@ -47,8 +81,8 @@ class Recorder {
   startRecording() {
     if(!this.isRecording()) {
       let numChannels = this.numChannels;
-          buffer = this.buffer;
-          worker = this.worker;
+      let buffer = this.buffer;
+      let worker = this.worker;
       this.processor = this.context.createScriptProcessor(
         this.options.bufferSize,
         this.numChannels, this.numChannels);
@@ -76,7 +110,7 @@ class Recorder {
     }
   }
 
-  finishRecording: function() {
+  finishRecording() {
     if (this.isRecording()) {
       this.input.disconnect();
       this.processor.disconnect();
@@ -85,9 +119,9 @@ class Recorder {
     }
   }
 
-  cancelEncoding: function() {
+  cancelEncoding() {
     if (this.options.encodeAfterRecord)
-      if (!this.isRecording())
+      if (!this.isRecording()) {
         this.onEncodingCanceled(this);
         this.initWorker();
       }
@@ -117,7 +151,7 @@ class Recorder {
         case "error":
           _this.error(data.message);
       }
-    };
+    }
     this.worker.postMessage({
       command: "init",
       config: {
@@ -179,8 +213,7 @@ const audioCapture = () => {
     const audioCtx = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
     let mediaRecorder = new Recorder(source);
-
-    mediaRecorder.record();
+    mediaRecorder.startRecording();
     chrome.commands.onCommand.addListener(function onStop(command) {
       if (command === "stop") {
         stopCapture();
@@ -198,13 +231,13 @@ const audioCapture = () => {
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         endTabId = tabs[0].id;
         if(mediaRecorder && startTabId === endTabId){
-          mediaRecorder.stop();
-          mediaRecorder.exportWAV((blob)=> {
+          mediaRecorder.finishRecording();
+          mediaRecorder.onComplete = (recorder, blob) => {
             const audioURL = window.URL.createObjectURL(blob);
             const now = new Date(Date.now());
             const currentDate = now.toDateString();
             chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.wav`})
-          })
+          }
           audioCtx.close();
           liveStream.getAudioTracks()[0].stop();
           mediaRecorder = null;

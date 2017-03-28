@@ -32,7 +32,7 @@
     "stop": {
       "suggested_key": {
         "default": "Ctrl+Shift+X",
-        "mac": "Command+Shift+X"
+        "mac": "MacCtrl+Shift+X"
       },
       "description": "Stop Capture"
     }
