@@ -3,12 +3,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const maxTime = document.getElementById('maxTime');
   const save = document.getElementById('save');
   const status = document.getElementById('status');
+  const mp3Select = document.getElementById('mp3');
+  const wavSelect = document.getElementById('wav');
+  let currentFormat;
   chrome.storage.sync.get({
     muteTab: false,
-    maxTime: 1200000
+    maxTime: 1200000,
+    format: "mp3"
   }, (options) => {
     mute.checked = options.muteTab;
-    maxTime.value = options.maxTime/60000
+    maxTime.value = options.maxTime/60000;
+    currentFormat = options.format;
+    if (options.format === "mp3") {
+      mp3Select.checked = true;
+    } else {
+      wavSelect.checked = true;
+    }
   });
 
   mute.onchange = () => {
@@ -25,10 +35,20 @@ document.addEventListener('DOMContentLoaded', () => {
       maxTime.value = 20;
     }
   }
+
+  mp3Select.onclick = () => {
+    currentFormat = "mp3";
+  }
+
+  wavSelect.onclick = () => {
+    currentFormat = "wav";
+  }
+
   save.onclick = () => {
     chrome.storage.sync.set({
       muteTab: mute.checked,
-      maxTime: maxTime.value*60000
+      maxTime: maxTime.value*60000,
+      format: currentFormat
     });
     status.innerHTML = "Settings saved!"
   }
