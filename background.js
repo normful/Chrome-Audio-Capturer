@@ -1,10 +1,10 @@
-var extend = function() {
-  var target = arguments[0],
+const extend = function() {
+  let target = arguments[0],
       sources = [].slice.call(arguments, 1);
-  for (var i = 0; i < sources.length; ++i) {
-    var src = sources[i];
+  for (let i = 0; i < sources.length; ++i) {
+    let src = sources[i];
     for (key in src) {
-      var val = src[key];
+      let val = src[key];
       target[key] = typeof val === "object"
         ? extend(typeof target[key] === "object" ? target[key] : {}, val)
         : val;
@@ -13,14 +13,13 @@ var extend = function() {
   return target;
 };
 
-var WORKER_FILE = {
+const WORKER_FILE = {
   wav: "WebAudioRecorderWav.js",
-  ogg: "WebAudioRecorderOgg.js",
   mp3: "WebAudioRecorderMp3.js"
 };
 
 // default configs
-var CONFIGS = {
+const CONFIGS = {
   workerDir: "/workers/",     // worker scripts dir (end with /)
   numChannels: 2,     // number of channels
   encoding: "wav",    // encoding (can be changed at runtime)
@@ -147,9 +146,6 @@ class Recorder {
           break;
         case "complete":
           _this.onComplete(_this, data.blob);
-          break;
-        case "error":
-          _this.error(data.message);
       }
     }
     this.worker.postMessage({
