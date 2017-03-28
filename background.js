@@ -1,91 +1,207 @@
+var extend = function() {
+  var target = arguments[0],
+      sources = [].slice.call(arguments, 1);
+  for (var i = 0; i < sources.length; ++i) {
+    var src = sources[i];
+    for (key in src) {
+      var val = src[key];
+      target[key] = typeof val === "object"
+        ? extend(typeof target[key] === "object" ? target[key] : {}, val)
+        : val;
+    }
+  }
+  return target;
+};
+
+var WORKER_FILE = {
+  wav: "WebAudioRecorderWav.js",
+  ogg: "WebAudioRecorderOgg.js",
+  mp3: "WebAudioRecorderMp3.js"
+};
+
+// default configs
+var CONFIGS = {
+  workerDir: "/workers/",     // worker scripts dir (end with /)
+  numChannels: 2,     // number of channels
+  encoding: "wav",    // encoding (can be changed at runtime)
+
+  // runtime options
+  options: {
+    timeLimit: 300,           // recording time limit (sec)
+    encodeAfterRecord: false, // process encoding after recording
+    progressInterval: 1000,   // encoding progress report interval (millisec)
+    bufferSize: undefined,    // buffer size (use browser default)
+
+    // encoding-specific options
+    wav: {
+      mimeType: "audio/wav"
+    },
+    ogg: {
+      mimeType: "audio/ogg",
+      quality: 0.5            // (VBR only): quality = [-0.1 .. 1]
+    },
+    mp3: {
+      mimeType: "audio/mpeg",
+      bitRate: 160            // (CBR only): bit rate = [64 .. 320]
+    }
+  }
+};
+
 class Recorder {
 
-  constructor(source, cfg) {
-      this.config = {
-          bufferLen: 4096,
-          numChannels: 2,
-          mimeType: 'audio/wav'
+  constructor(source, configs) {
+    extend(this, CONFIGS, configs || {});
+    this.context = source.context;
+    if (this.context.createScriptProcessor == null)
+      this.context.createScriptProcessor = this.context.createJavaScriptNode;
+    this.input = this.context.createGain();
+    source.connect(this.input);
+    this.buffer = [];
+    this.initWorker();
+  }
+
+  isRecording() {
+    return this.processor != null;
+  }
+
+  setEncoding(encoding) {
+    if(!this.isRecording() && this.encoding !== encoding) {
+        this.encoding = encoding;
+        this.initWorker();
+    }
+  }
+
+  setOptions(options) {
+    if (!this.isRecording()) {
+      extend(this.options, options);
+      this.worker.postMessage({ command: "options", options: this.options});
+    }
+  }
+
+  startRecording() {
+    if(!this.isRecording()) {
+      let numChannels = this.numChannels;
+      let buffer = this.buffer;
+      let worker = this.worker;
+      this.processor = this.context.createScriptProcessor(
+        this.options.bufferSize,
+        this.numChannels, this.numChannels);
+      this.input.connect(this.processor);
+      this.processor.connect(this.context.destination);
+      this.processor.onaudioprocess = function(event) {
+        for (var ch = 0; ch < numChannels; ++ch)
+          buffer[ch] = event.inputBuffer.getChannelData(ch);
+        worker.postMessage({ command: "record", buffer: buffer });
       };
-
-      this.recording = false;
-
-      this.callbacks = {
-          getBuffer: [],
-          exportWAV: []
-      };
-      Object.assign(this.config, cfg);
-      this.context = source.context;
-      this.node = (this.context.createScriptProcessor ||
-      this.context.createJavaScriptNode).call(this.context,
-          this.config.bufferLen, this.config.numChannels, this.config.numChannels);
-
-      this.node.onaudioprocess = (e) => {
-          if (!this.recording) return;
-
-          var buffer = [];
-          for (var channel = 0; channel < this.config.numChannels; channel++) {
-              buffer.push(e.inputBuffer.getChannelData(channel));
-          }
-          this.worker.postMessage({
-              command: 'record',
-              buffer: buffer
-          });
-      };
-
-      source.connect(this.node);
-      this.node.connect(this.context.destination);
-      const workerURL = chrome.extension.getURL("worker.js");
-      this.worker = new Worker(workerURL);
       this.worker.postMessage({
-          command: 'init',
-          config: {
-              sampleRate: this.context.sampleRate,
-              numChannels: this.config.numChannels
-          }
+        command: "start",
+        bufferSize: this.processor.bufferSize
       });
-
-      this.worker.onmessage = (e) => {
-          let cb = this.callbacks[e.data.command].pop();
-          if (typeof cb == 'function') {
-              cb(e.data.data);
-          }
-      };
+      this.startTime = Date.now();
+    }
   }
 
-
-  record() {
-      this.recording = true;
+  cancelRecording() {
+    if(this.isRecording()) {
+      this.input.disconnect();
+      this.processor.disconnect();
+      delete this.processor;
+      this.worker.postMessage({ command: "cancel" });
+    }
   }
 
-  stop() {
-      this.recording = false;
+  finishRecording() {
+    if (this.isRecording()) {
+      this.input.disconnect();
+      this.processor.disconnect();
+      delete this.processor;
+      this.worker.postMessage({ command: "finish" });
+    }
   }
 
-  clear() {
-      this.worker.postMessage({command: 'clear'});
+  cancelEncoding() {
+    if (this.options.encodeAfterRecord)
+      if (!this.isRecording()) {
+        this.onEncodingCanceled(this);
+        this.initWorker();
+      }
   }
 
-  getBuffer(cb) {
-      cb = cb || this.config.callback;
-      if (!cb) throw new Error('Callback not set');
-
-      this.callbacks.getBuffer.push(cb);
-
-      this.worker.postMessage({command: 'getBuffer'});
+  initWorker() {
+    if (this.worker != null)
+      this.worker.terminate();
+    this.onEncoderLoading(this, this.encoding);
+    this.worker = new Worker(this.workerDir + WORKER_FILE[this.encoding]);
+    let _this = this;
+    this.worker.onmessage = function(event) {
+      let data = event.data;
+      switch (data.command) {
+        case "loaded":
+          _this.onEncoderLoaded(_this, _this.encoding);
+          break;
+        case "timeout":
+          _this.onTimeout(_this);
+          break;
+        case "progress":
+          _this.onEncodingProgress(_this, data.progress);
+          break;
+        case "complete":
+          _this.onComplete(_this, data.blob);
+          break;
+        case "error":
+          _this.error(data.message);
+      }
+    }
+    this.worker.postMessage({
+      command: "init",
+      config: {
+        sampleRate: this.context.sampleRate,
+        numChannels: this.numChannels
+      },
+      options: this.options
+    });
   }
 
-  exportWAV(cb, mimeType) {
-      mimeType = mimeType || this.config.mimeType;
-      cb = cb || this.config.callback;
-      if (!cb) throw new Error('Callback not set');
+  onEncoderLoading(recorder, encoding) {}
+  onEncoderLoaded(recorder, encoding) {}
+  onTimeout(recorder) { recorder.finishRecording(); }
+  onEncodingProgress(recorder, progress) {}
+  onEncodingCanceled(recorder) {}
+  onComplete(recorder, blob) {}
 
-      this.callbacks.exportWAV.push(cb);
-
-      this.worker.postMessage({
-          command: 'exportWAV',
-          type: mimeType
-      });
-  }
+  // record() {
+  //     this.recording = true;
+  // }
+  //
+  // stop() {
+  //     this.recording = false;
+  // }
+  //
+  // clear() {
+  //     this.worker.postMessage({command: 'clear'});
+  // }
+  //
+  // getBuffer(cb) {
+  //     cb = cb || this.config.callback;
+  //     if (!cb) throw new Error('Callback not set');
+  //
+  //     this.callbacks.getBuffer.push(cb);
+  //
+  //     this.worker.postMessage({command: 'getBuffer'});
+  // }
+  //
+  // exportWAV(cb, mimeType) {
+  //     mimeType = mimeType || this.config.mimeType;
+  //     cb = cb || this.config.callback;
+  //     if (!cb) throw new Error('Callback not set');
+  //
+  //     this.callbacks.exportWAV.push(cb);
+  //
+  //     this.worker.postMessage({
+  //         command: 'exportWAV',
+  //         type: mimeType
+  //     });
+  // }
 }
 
 const audioCapture = () => {
@@ -97,8 +213,7 @@ const audioCapture = () => {
     const audioCtx = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
     let mediaRecorder = new Recorder(source);
-
-    mediaRecorder.record();
+    mediaRecorder.startRecording();
     chrome.commands.onCommand.addListener(function onStop(command) {
       if (command === "stop") {
         stopCapture();
@@ -116,13 +231,13 @@ const audioCapture = () => {
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         endTabId = tabs[0].id;
         if(mediaRecorder && startTabId === endTabId){
-          mediaRecorder.stop();
-          mediaRecorder.exportWAV((blob)=> {
+          mediaRecorder.finishRecording();
+          mediaRecorder.onComplete = (recorder, blob) => {
             const audioURL = window.URL.createObjectURL(blob);
             const now = new Date(Date.now());
             const currentDate = now.toDateString();
             chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.wav`})
-          })
+          }
           audioCtx.close();
           liveStream.getAudioTracks()[0].stop();
           mediaRecorder = null;
