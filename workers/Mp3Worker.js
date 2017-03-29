@@ -1,6 +1,6 @@
 importScripts("/../encoders/Mp3Encoder.min.js");
 
-const NUM_CH = 2, // constant
+let NUM_CH = 2, // constant
     sampleRate = 44100,
     options = undefined,
     maxBuffers = undefined,

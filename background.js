@@ -27,7 +27,7 @@ const CONFIGS = {
   // runtime options
   options: {
     timeLimit: 300,           // recording time limit (sec)
-    encodeAfterRecord: false, // process encoding after recording
+    encodeAfterRecord: true, // process encoding after recording
     progressInterval: 1000,   // encoding progress report interval (millisec)
     bufferSize: undefined,    // buffer size (use browser default)
 
@@ -172,6 +172,7 @@ const audioCapture = () => {
     const audioCtx = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
     let mediaRecorder = new Recorder(source);
+    mediaRecorder.setEncoding("mp3");
     mediaRecorder.startRecording();
     chrome.commands.onCommand.addListener(function onStop(command) {
       if (command === "stop") {
@@ -195,7 +196,7 @@ const audioCapture = () => {
             const audioURL = window.URL.createObjectURL(blob);
             const now = new Date(Date.now());
             const currentDate = now.toDateString();
-            chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.wav`})
+            chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.mp3`})
           }
           audioCtx.close();
           liveStream.getAudioTracks()[0].stop();

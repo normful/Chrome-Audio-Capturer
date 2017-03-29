@@ -1,6 +1,6 @@
 importScripts("/../encoders/WavEncoder.min.js");
 
-var sampleRate = 44100,
+const sampleRate = 44100,
     numChannels = 2,
     options = undefined,
     maxBuffers = undefined,
