@@ -1,4 +1,4 @@
-importScripts("/../encoders/wavencoder.min.js");
+importScripts("/../encoders/WavEncoder.min.js");
 
 var sampleRate = 44100,
     numChannels = 2,

@@ -14,8 +14,8 @@ const extend = function() {
 };
 
 const WORKER_FILE = {
-  wav: "WebAudioRecorderWav.js",
-  mp3: "WebAudioRecorderMp3.js"
+  wav: "WavWorker.js",
+  mp3: "Mp3Worker.js"
 };
 
 // default configs
@@ -34,10 +34,6 @@ const CONFIGS = {
     // encoding-specific options
     wav: {
       mimeType: "audio/wav"
-    },
-    ogg: {
-      mimeType: "audio/ogg",
-      quality: 0.5            // (VBR only): quality = [-0.1 .. 1]
     },
     mp3: {
       mimeType: "audio/mpeg",
@@ -165,39 +161,6 @@ class Recorder {
   onEncodingCanceled(recorder) {}
   onComplete(recorder, blob) {}
 
-  // record() {
-  //     this.recording = true;
-  // }
-  //
-  // stop() {
-  //     this.recording = false;
-  // }
-  //
-  // clear() {
-  //     this.worker.postMessage({command: 'clear'});
-  // }
-  //
-  // getBuffer(cb) {
-  //     cb = cb || this.config.callback;
-  //     if (!cb) throw new Error('Callback not set');
-  //
-  //     this.callbacks.getBuffer.push(cb);
-  //
-  //     this.worker.postMessage({command: 'getBuffer'});
-  // }
-  //
-  // exportWAV(cb, mimeType) {
-  //     mimeType = mimeType || this.config.mimeType;
-  //     cb = cb || this.config.callback;
-  //     if (!cb) throw new Error('Callback not set');
-  //
-  //     this.callbacks.exportWAV.push(cb);
-  //
-  //     this.worker.postMessage({
-  //         command: 'exportWAV',
-  //         type: mimeType
-  //     });
-  // }
 }
 
 const audioCapture = () => {
