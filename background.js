@@ -22,7 +22,7 @@ const WORKER_FILE = {
 const CONFIGS = {
   workerDir: "/workers/",     // worker scripts dir (end with /)
   numChannels: 2,     // number of channels
-  encoding: "wav",    // encoding (can be changed at runtime)
+  encoding: "mp3",    // encoding (can be changed at runtime)
 
   // runtime options
   options: {
@@ -37,7 +37,7 @@ const CONFIGS = {
     },
     mp3: {
       mimeType: "audio/mpeg",
-      bitRate: 160            // (CBR only): bit rate = [64 .. 320]
+      bitRate: 192            // (CBR only): bit rate = [64 .. 320]
     }
   }
 };
@@ -163,7 +163,7 @@ class Recorder {
 
 }
 
-const audioCapture = () => {
+const audioCapture = (timeLimit, muteTab, format, quality) => {
   chrome.tabCapture.capture({audio: true}, (stream) => {
     let startTabId;
     let timeout;
@@ -172,7 +172,10 @@ const audioCapture = () => {
     const audioCtx = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
     let mediaRecorder = new Recorder(source);
-    mediaRecorder.setEncoding("mp3");
+    mediaRecorder.setEncoding(format);
+    if(format === "mp3") {
+      mediaRecorder.setOptions({mp3: {bitRate: quality}});
+    }
     mediaRecorder.startRecording();
     chrome.commands.onCommand.addListener(function onStop(command) {
       if (command === "stop") {
@@ -196,7 +199,7 @@ const audioCapture = () => {
             const audioURL = window.URL.createObjectURL(blob);
             const now = new Date(Date.now());
             const currentDate = now.toDateString();
-            chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.mp3`})
+            chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.` + `${format}`})
           }
           audioCtx.close();
           liveStream.getAudioTracks()[0].stop();
@@ -206,24 +209,12 @@ const audioCapture = () => {
         }
       })
     }
-    chrome.storage.sync.get({
-      maxTime: 1200000
-    }, (options) => {
-      let time = options.maxTime;
-      if(time > 1200000) {
-        time = 1200000
-      }
-      timeout = setTimeout(stopCapture, time);
-    });
-    chrome.storage.sync.get({
-      muteTab: false
-    }, (options) => {
-      if(!options.muteTab) {
-        let audio = new Audio();
-        audio.srcObject = liveStream;
-        audio.play();
-      }
-    });
+    timeout = setTimeout(stopCapture, timeLimit)
+    if(!muteTab) {
+      let audio = new Audio();
+      audio.srcObject = liveStream;
+      audio.play();
+    }
   });
 }
 
@@ -244,7 +235,18 @@ const startCapture = function() {
     } else {
       if(!sessionStorage.getItem(tabs[0].id)) {
         sessionStorage.setItem(tabs[0].id, Date.now());
-        audioCapture();
+        chrome.storage.sync.get({
+          maxTime: 1200000,
+          muteTab: false,
+          format: "mp3",
+          quality: 192
+        }, (options) => {
+          let time = options.maxTime;
+          if(time > 1200000) {
+            time = 1200000
+          }
+          audioCapture(time, options.muteTab, options.format, options.quality);
+        });
         chrome.runtime.sendMessage({captureStarted: tabs[0].id, startTime: Date.now()});
       }
     }

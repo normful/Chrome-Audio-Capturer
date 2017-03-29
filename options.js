@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.sync.get({
     muteTab: false,
     maxTime: 1200000,
-    format: "mp3"
+    format: "mp3",
+    quality: 192
   }, (options) => {
     mute.checked = options.muteTab;
     maxTime.value = options.maxTime/60000;
@@ -38,17 +39,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   mp3Select.onclick = () => {
     currentFormat = "mp3";
+    status.innerHTML = "";
   }
 
   wavSelect.onclick = () => {
     currentFormat = "wav";
+    status.innerHTML = "";
   }
 
   save.onclick = () => {
     chrome.storage.sync.set({
       muteTab: mute.checked,
       maxTime: maxTime.value*60000,
-      format: currentFormat
+      format: currentFormat,
+      quality: 192
     });
     status.innerHTML = "Settings saved!"
   }
