@@ -1,6 +1,6 @@
 importScripts("/../encoders/Mp3Encoder.min.js");
 
-var NUM_CH = 2, // constant
+const NUM_CH = 2, // constant
     sampleRate = 44100,
     options = undefined,
     maxBuffers = undefined,
@@ -53,10 +53,10 @@ function finish() {
   if (recBuffers) {
     postProgress(0);
     encoder = new Mp3LameEncoder(sampleRate, options.mp3.bitRate);
-    var timeout = Date.now() + options.progressInterval;
+    let timeout = Date.now() + options.progressInterval;
     while (recBuffers.length > 0) {
       encoder.encode(recBuffers.shift());
-      var now = Date.now();
+      let now = Date.now();
       if (now > timeout) {
         postProgress((bufferCount - recBuffers.length) / bufferCount);
         timeout = now + options.progressInterval;
@@ -77,7 +77,7 @@ function cleanup() {
 }
 
 self.onmessage = function(event) {
-  var data = event.data;
+  let data = event.data;
   switch (data.command) {
     case "init":    init(data);                 break;
     case "options": setOptions(data.options);   break;
