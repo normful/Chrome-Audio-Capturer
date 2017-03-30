@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.sync.get({
     muteTab: false,
     maxTime: 1200000,
-    format: "mp3",
+    format: "wav",
     quality: 192
   }, (options) => {
     mute.checked = options.muteTab;

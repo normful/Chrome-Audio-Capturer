@@ -22,11 +22,11 @@ const WORKER_FILE = {
 const CONFIGS = {
   workerDir: "/workers/",     // worker scripts dir (end with /)
   numChannels: 2,     // number of channels
-  encoding: "mp3",    // encoding (can be changed at runtime)
+  encoding: "wav",    // encoding (can be changed at runtime)
 
   // runtime options
   options: {
-    timeLimit: 300,           // recording time limit (sec)
+    timeLimit: 1200,           // recording time limit (sec)
     encodeAfterRecord: true, // process encoding after recording
     progressInterval: 1000,   // encoding progress report interval (millisec)
     bufferSize: undefined,    // buffer size (use browser default)
@@ -173,6 +173,7 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
     const source = audioCtx.createMediaStreamSource(stream);
     let mediaRecorder = new Recorder(source);
     mediaRecorder.setEncoding(format);
+    mediaRecorder.setOptions({timeLimit: timeLimit});
     if(format === "mp3") {
       mediaRecorder.setOptions({mp3: {bitRate: quality}});
     }
