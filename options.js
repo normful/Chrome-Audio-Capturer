@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = document.getElementById('status');
   const mp3Select = document.getElementById('mp3');
   const wavSelect = document.getElementById('wav');
+  const quality = document.getElementById("quality");
   let currentFormat;
   chrome.storage.sync.get({
     muteTab: false,
@@ -47,12 +48,16 @@ document.addEventListener('DOMContentLoaded', () => {
     status.innerHTML = "";
   }
 
+  quality.onchange = () => {
+    status.innerHTML = "";
+  }
+
   save.onclick = () => {
     chrome.storage.sync.set({
       muteTab: mute.checked,
       maxTime: maxTime.value*60000,
       format: currentFormat,
-      quality: 192
+      quality: quality.value
     });
     status.innerHTML = "Settings saved!"
   }

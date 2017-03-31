@@ -173,7 +173,7 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
     const source = audioCtx.createMediaStreamSource(stream);
     let mediaRecorder = new Recorder(source);
     mediaRecorder.setEncoding(format);
-    mediaRecorder.setOptions({timeLimit: timeLimit});
+    mediaRecorder.setOptions({timeLimit: timeLimit/100});
     if(format === "mp3") {
       mediaRecorder.setOptions({mp3: {bitRate: quality}});
     }
@@ -210,7 +210,7 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
         }
       })
     }
-    timeout = setTimeout(stopCapture, timeLimit)
+    timeout = setTimeout(stopCapture, timeLimit);
     if(!muteTab) {
       let audio = new Audio();
       audio.srcObject = liveStream;
