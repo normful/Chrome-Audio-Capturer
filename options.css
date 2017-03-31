@@ -61,6 +61,10 @@ label {
   font-size: 14px;
 }
 
+#qualityLi {
+  display: none;
+}
+
 #maxTime {
   width: 30px;
   text-align: center;

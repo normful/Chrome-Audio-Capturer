@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mp3Select = document.getElementById('mp3');
   const wavSelect = document.getElementById('wav');
   const quality = document.getElementById("quality");
+  const qualityLi = document.getElementById("qualityLi");
   let currentFormat;
   chrome.storage.sync.get({
     muteTab: false,
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentFormat = options.format;
     if (options.format === "mp3") {
       mp3Select.checked = true;
+      qualityLi.style.display = "block";
     } else {
       wavSelect.checked = true;
     }
@@ -40,15 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   mp3Select.onclick = () => {
     currentFormat = "mp3";
+    qualityLi.style.display = "block";
     status.innerHTML = "";
   }
 
   wavSelect.onclick = () => {
     currentFormat = "wav";
+    qualityLi.style.display = "none";
     status.innerHTML = "";
   }
 
-  quality.onchange = () => {
+  quality.onchange = (e) => {
     status.innerHTML = "";
   }
 
