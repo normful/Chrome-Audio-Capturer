@@ -23,6 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       wavSelect.checked = true;
     }
+    if (options.quality === "96") {
+      quality.selectedIndex = 0;
+    } else if(options.quality === "192") {
+      quality.selectedIndex = 1;
+    } else {
+      quality.selectedIndex = 2;
+    }
   });
 
   mute.onchange = () => {
