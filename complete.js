@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const encodeProgress = document.getElementById('encodeProgress');
-  let mediaRecorder;
   let format;
   let audioURL;
   let encoding = false;
@@ -11,18 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
         generateSave(request.audioURL);
       } else {
         encoding = true;
-        mediaRecorder = request.recorder;
-        mediaRecorder.onEncodingProgress = (recorder, progress) => {
-          console.log(progress);
-          encodeProgress.value = progress * 100;
-        }
       }
     }
     if(request.type === "encodingComplete" && encoding) {
       encoding = false;
-      mediaRecorder = null;
       encodeProgress.value = 100;
       generateSave(request.audioURL);
+    }
+    if(request.type === "encodingProgress" && encoding) {
+      console.log(request.progress);
+      encodeProgress.value = request.progress * 100;
     }
     function generateSave(url) {
       const currentDate = new Date(Date.now()).toDateString();
