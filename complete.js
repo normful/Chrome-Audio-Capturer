@@ -3,21 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
   let mediaRecorder;
   let format;
   let audioURL;
+  let encoding = false;
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.type === "createTab") {
-      console.log("instant");
+      format = request.format;
       if(request.audioURL) {
         generateSave(request.audioURL);
       } else {
+        encoding = true;
         mediaRecorder = request.recorder;
-        format = request.format;
         mediaRecorder.onEncodingProgress = (recorder, progress) => {
+          console.log(progress);
           encodeProgress.value = progress * 100;
         }
       }
     }
-    if(request.type === "encodingComplete") {
-      console.log("delay");
+    if(request.type === "encodingComplete" && encoding) {
+      encoding = false;
+      mediaRecorder = null;
+      encodeProgress.value = 100;
       generateSave(request.audioURL);
     }
     function generateSave(url) {

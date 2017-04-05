@@ -195,6 +195,9 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
       chrome.tabs.sendMessage(completeTabID, {type: "encodingComplete", audioURL});
       mediaRecorder = null;
     }
+    mediaRecorder.onEncodingProgress = (recorder, progress) => {
+      chrome.tabs.sendMessage(completeTabID, {type: "encodingComplete", audioURL});
+    }
     const stopCapture = function() {
       let endTabId;
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
