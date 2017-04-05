@@ -4,14 +4,25 @@ document.addEventListener('DOMContentLoaded', () => {
   let format;
   let audioURL;
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if(request.audioURL) {
-      chrome.downloads.download({url: request.audioURL, filename: `Capture.` + `${request.format}`})
-    } else {
-      mediaRecorder = request.recorder;
-      format = request.format;
-      mediaRecorder.onEncodingProgress = (recorder, progress) => {
-        console.log(progress);
+    if(request.type === "createTab") {
+      console.log("instant");
+      if(request.audioURL) {
+        generateSave(request.audioURL);
+      } else {
+        mediaRecorder = request.recorder;
+        format = request.format;
+        mediaRecorder.onEncodingProgress = (recorder, progress) => {
+          encodeProgress.value = progress * 100;
+        }
       }
+    }
+    if(request.type === "encodingComplete") {
+      console.log("delay");
+      generateSave(request.audioURL);
+    }
+    function generateSave(url) {
+      const currentDate = new Date(Date.now()).toDateString();
+      chrome.downloads.download({url: url, filename: `${currentDate}.${format}`, saveAs: true});
     }
   });
 })

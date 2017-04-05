@@ -175,7 +175,7 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
     const source = audioCtx.createMediaStreamSource(stream);
     let mediaRecorder = new Recorder(source);
     mediaRecorder.setEncoding(format);
-    mediaRecorder.setOptions({timeLimit: timeLimit/100});
+    mediaRecorder.setOptions({timeLimit: timeLimit/1000});
     if(format === "mp3") {
       mediaRecorder.setOptions({mp3: {bitRate: quality}});
     }
@@ -192,7 +192,8 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
     });
     mediaRecorder.onComplete = (recorder, blob) => {
       audioURL = window.URL.createObjectURL(blob);
-      chrome.tabs.sendMessage(completeTabID, {audioURL});
+      chrome.tabs.sendMessage(completeTabID, {type: "encodingComplete", audioURL});
+      mediaRecorder = null;
     }
     const stopCapture = function() {
       let endTabId;
@@ -204,7 +205,7 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
           chrome.tabs.create({url: "complete.html"}, (tab) => {
             completeTabID = tab.id;
             let completeCallback = () => {
-              chrome.tabs.sendMessage(tab.id, {recorder: mediaRecorder, format, audioURL});
+              chrome.tabs.sendMessage(tab.id, {type: "createTab", recorder: mediaRecorder, format: format, audioURL});
             }
             setTimeout(completeCallback, 500);
           });

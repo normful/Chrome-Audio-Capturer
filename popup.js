@@ -48,11 +48,15 @@ const displayStatus = function() {
 const parseTime = function(time) {
   let minutes = Math.floor((time/1000)/60);
   let seconds = Math.floor((time/1000) % 60);
-  if (minutes < 10) {
+  if (minutes < 10 && minutes >= 0) {
     minutes = '0' + minutes;
+  } else if (minutes < 0) {
+    minutes = '00';
   }
-  if (seconds < 10) {
+  if (seconds < 10 && seconds >= 0) {
     seconds = '0' + seconds;
+  } else if (seconds < 0) {
+    seconds = '00';
   }
   return `${minutes}:${seconds}`
 }
