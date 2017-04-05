@@ -196,15 +196,21 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
         endTabId = tabs[0].id;
         if(mediaRecorder && startTabId === endTabId){
           mediaRecorder.finishRecording();
-          mediaRecorder.onComplete = (recorder, blob) => {
-            const audioURL = window.URL.createObjectURL(blob);
-            const now = new Date(Date.now());
-            const currentDate = now.toDateString();
-            chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.` + `${format}`})
-          }
+          chrome.tabs.create({url: "complete.html"}, (tab) => {
+            console.log(tab);
+            let completeCallback = () => {
+              chrome.runtime.sendMessage({recorder: mediaRecorder});
+            }
+            setTimeout(completeCallback, 500);
+          });
+          // mediaRecorder.onComplete = (recorder, blob) => {
+          //   const audioURL = window.URL.createObjectURL(blob);
+          //   const now = new Date(Date.now());
+          //   const currentDate = now.toDateString();
+          //   chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.` + `${format}`})
+          // }
           audioCtx.close();
           liveStream.getAudioTracks()[0].stop();
-          mediaRecorder = null;
           sessionStorage.removeItem(endTabId);
           chrome.runtime.sendMessage({captureStopped: endTabId});
         }
