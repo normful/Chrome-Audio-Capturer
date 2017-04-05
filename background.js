@@ -156,7 +156,7 @@ class Recorder {
 
   onEncoderLoading(recorder, encoding) {}
   onEncoderLoaded(recorder, encoding) {}
-  onTimeout(recorder) { recorder.finishRecording(); }
+  onTimeout(recorder) {}
   onEncodingProgress(recorder, progress) {}
   onEncodingCanceled(recorder) {}
   onComplete(recorder, blob) {}
@@ -167,6 +167,8 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
   chrome.tabCapture.capture({audio: true}, (stream) => {
     let startTabId;
     let timeout;
+    let completeTabID;
+    let audioURL = null;
     chrome.tabs.query({active:true, currentWindow: true}, (tabs) => startTabId = tabs[0].id)
     const liveStream = stream;
     const audioCtx = new AudioContext();
@@ -181,34 +183,31 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
     chrome.commands.onCommand.addListener(function onStop(command) {
       if (command === "stop") {
         stopCapture();
-        clearTimeout(timeout);
       }
     });
     chrome.runtime.onMessage.addListener((request) => {
       if(request === "stopCapture") {
         stopCapture();
-        clearTimeout(timeout);
       }
     });
+    mediaRecorder.onComplete = (recorder, blob) => {
+      audioURL = window.URL.createObjectURL(blob);
+      chrome.tabs.sendMessage(completeTabID, {audioURL});
+    }
     const stopCapture = function() {
       let endTabId;
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         endTabId = tabs[0].id;
         if(mediaRecorder && startTabId === endTabId){
+          mediaRecorder.onTimeout = () => {};
           mediaRecorder.finishRecording();
           chrome.tabs.create({url: "complete.html"}, (tab) => {
-            console.log(tab);
+            completeTabID = tab.id;
             let completeCallback = () => {
-              chrome.runtime.sendMessage({recorder: mediaRecorder});
+              chrome.tabs.sendMessage(tab.id, {recorder: mediaRecorder, format, audioURL});
             }
             setTimeout(completeCallback, 500);
           });
-          // mediaRecorder.onComplete = (recorder, blob) => {
-          //   const audioURL = window.URL.createObjectURL(blob);
-          //   const now = new Date(Date.now());
-          //   const currentDate = now.toDateString();
-          //   chrome.downloads.download({url: audioURL, filename: `${currentDate.replace(/\s/g, "-")} Capture.` + `${format}`})
-          // }
           audioCtx.close();
           liveStream.getAudioTracks()[0].stop();
           sessionStorage.removeItem(endTabId);
@@ -216,7 +215,7 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
         }
       })
     }
-    timeout = setTimeout(stopCapture, timeLimit);
+    mediaRecorder.onTimeout = stopCapture;
     if(!muteTab) {
       let audio = new Audio();
       audio.srcObject = liveStream;
