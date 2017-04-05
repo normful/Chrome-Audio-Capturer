@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
       generateSave(request.audioURL);
     }
     if(request.type === "encodingProgress" && encoding) {
-      console.log(request.progress);
       encodeProgress.value = request.progress * 100;
     }
     function generateSave(url) {
