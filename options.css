@@ -2,7 +2,12 @@
   display: flex;
   align-items: center;
   padding-bottom: 15px;
+  padding-left: 20px;
   border-bottom: 2px solid darkred;
+}
+
+.header-title {
+  padding: 0 5px;
 }
 
 h1 {

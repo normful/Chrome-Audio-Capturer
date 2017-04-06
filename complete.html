@@ -5,9 +5,13 @@
     <link rel="stylesheet" href="complete.css" type="text/css">
   </head>
   <body>
-    <div class="header"><img src="./icon.png"/> <h1>Chrome Audio Capture</h1></div>
+    <div class="header"><img src="./icon.png"/> <h1 class="header-title">Chrome Audio Capture</h1></div>
     <div class="inner">
-      <progress id="encodeProgress" value="0" max="100"></progress>
+      <div class="progress">
+        <label for="encodeProgress">Encoding Progress:</label>
+        <progress id="encodeProgress" value="0" max="100"></progress>
+      </div>
     </div>
+    <div id="saveCapture">Save Capture</div>
   </body>
 </html>

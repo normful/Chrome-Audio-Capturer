@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const encodeProgress = document.getElementById('encodeProgress');
+  const saveButton = document.getElementById('saveCapture');
   let format;
   let audioURL;
   let encoding = false;
@@ -7,9 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if(request.type === "createTab") {
       format = request.format;
       if(request.audioURL) {
+        encodeProgress.value = 100;
         generateSave(request.audioURL);
       } else {
         encoding = true;
+        progressDisplay.style.display = "block";
       }
     }
     if(request.type === "encodingComplete" && encoding) {
@@ -22,7 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function generateSave(url) {
       const currentDate = new Date(Date.now()).toDateString();
-      chrome.downloads.download({url: url, filename: `${currentDate}.${format}`, saveAs: true});
+      saveButton.onclick = () => {
+        chrome.downloads.download({url: url, filename: `${currentDate}.${format}`, saveAs: true});
+      };
+      saveButton.style.display = "block";
     }
   });
 })
