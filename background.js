@@ -180,29 +180,38 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
       mediaRecorder.setOptions({mp3: {bitRate: quality}});
     }
     mediaRecorder.startRecording();
-    chrome.commands.onCommand.addListener(function onStop(command) {
+
+    function onStopCommand(command) {
       if (command === "stop") {
         stopCapture();
       }
-    });
-    chrome.runtime.onMessage.addListener((request) => {
+    }
+    function onStopClick(request) {
       if(request === "stopCapture") {
         stopCapture();
       }
-    });
+    }
+    chrome.commands.onCommand.addListener(onStopCommand);
+    chrome.runtime.onMessage.addListener(onStopClick);
     mediaRecorder.onComplete = (recorder, blob) => {
       audioURL = window.URL.createObjectURL(blob);
-      chrome.tabs.sendMessage(completeTabID, {type: "encodingComplete", audioURL});
+      if(completeTabID) {
+        chrome.tabs.sendMessage(completeTabID, {type: "encodingComplete", audioURL});
+      }
       mediaRecorder = null;
     }
     mediaRecorder.onEncodingProgress = (recorder, progress) => {
-      chrome.tabs.sendMessage(completeTabID, {type: "encodingProgress", progress: progress});
+      if(completeTabID) {
+        chrome.tabs.sendMessage(completeTabID, {type: "encodingProgress", progress: progress});
+      }
     }
     const stopCapture = function() {
       let endTabId;
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         endTabId = tabs[0].id;
         if(mediaRecorder && startTabId === endTabId){
+          chrome.commands.onCommand.removeListener(onStopCommand);
+          chrome.runtime.onMessage.removeListener(onStopClick);
           mediaRecorder.onTimeout = () => {};
           mediaRecorder.finishRecording();
           chrome.tabs.create({url: "complete.html"}, (tab) => {
