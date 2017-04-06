@@ -13,12 +13,20 @@
 .progress {
   margin: 50px 20px;
   font-size: 16px;
-  display: block;
+  display: flex;
+}
+
+#progressContainer {
+  margin-left: 5px;
+  width: 500px;
+  height: 18px;
+  background-color: blanchedalmond;
 }
 
 #encodeProgress {
-  width: 500px;
-  height: 18px;
+  height: 100%;
+  width: 0%;
+  background-color: darkred;
 }
 
 #saveCapture {

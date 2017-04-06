@@ -8,20 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if(request.type === "createTab") {
       format = request.format;
       if(request.audioURL) {
-        encodeProgress.value = 100;
+        encodeProgress.style.width = '100%';
         generateSave(request.audioURL);
       } else {
         encoding = true;
-        progressDisplay.style.display = "block";
       }
     }
     if(request.type === "encodingComplete" && encoding) {
       encoding = false;
-      encodeProgress.value = 100;
+      encodeProgress.style.width = '100%';
       generateSave(request.audioURL);
     }
     if(request.type === "encodingProgress" && encoding) {
-      encodeProgress.value = request.progress * 100;
+      encodeProgress.style.width = `${request.progress * 100}%`;
     }
     function generateSave(url) {
       const currentDate = new Date(Date.now()).toDateString();
