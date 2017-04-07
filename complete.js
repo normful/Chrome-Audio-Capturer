@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveButton.onclick = () => {
         chrome.downloads.download({url: url, filename: `${currentDate}.${format}`, saveAs: true});
       };
-      saveButton.style.display = "block";
+      saveButton.style.display = "inline-block";
     }
   });
 })

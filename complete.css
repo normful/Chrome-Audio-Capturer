@@ -20,7 +20,7 @@
   margin-left: 5px;
   width: 500px;
   height: 18px;
-  background-color: blanchedalmond;
+  background-color: lavenderblush;
 }
 
 #encodeProgress {
@@ -32,15 +32,21 @@
 #saveCapture {
   display: none;
   padding: 10px;
-  width: 96px;
   border: 2px solid darkred;
   font-size: 16px;
   font-weight: bold;
-  margin: 50px 100px;
+  margin: 20px 50px;
   cursor: pointer;
 }
 
 #saveCapture:hover {
   color: red;
   background-color: darkred;
+}
+
+.link {
+  color: blue;
+  display: inline;
+  text-decoration: underline;
+  cursor: pointer;
 }
