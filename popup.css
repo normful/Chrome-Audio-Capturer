@@ -55,13 +55,13 @@ li {
   cursor: pointer;
 }
 
-#buttons {
+.buttonContainer {
   display: flex;
   justify-content: space-around;
 }
 
 .button {
-  /*display: none;*/
+  display: none;
   text-align: center;
   padding: 10px;
   border: 2px solid darkred;

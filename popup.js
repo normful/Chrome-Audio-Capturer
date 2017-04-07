@@ -9,15 +9,11 @@ let timeLeft;
 // stopButton.innerHTML = "Stop Capture";
 // stopButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
 
-const startButton = document.getElementById('start');
-const finishButton = document.getElementById('finish');
-const cancelButton = document.getElementById('cancel');
 
 const displayStatus = function() {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     const status = document.getElementById("status");
     const timeRem = document.getElementById("timeRem");
-    const buttons = document.getElementById("buttons");
     if(tabs[0].url.toLowerCase().includes("youtube")) {
       status.innerHTML = "Capture is disabled on this site due to copyright";
     } else {
@@ -108,6 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
   displayStatus();
   const startKey = document.getElementById("startKey");
   const endKey = document.getElementById("endKey");
+  const startButton = document.getElementById('start');
+  const finishButton = document.getElementById('finish');
+  const cancelButton = document.getElementById('cancel');
+  startButton.onclick = () => {chrome.runtime.sendMessage("startCapture")};
+  finishButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
+  cancelButton.onclick = () => {chrome.runtime.sendMessage("cancelCapture")};
   chrome.runtime.getPlatformInfo((info) => {
     if(info.os === "mac") {
       startKey.innerHTML = "Command + Shift + U to start capture on current tab";
