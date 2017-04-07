@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const encodeProgress = document.getElementById('encodeProgress');
   const saveButton = document.getElementById('saveCapture');
+  const review = document.getElementById('review');
   let format;
   let audioURL;
   let encoding = false;
@@ -30,4 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveButton.style.display = "inline-block";
     }
   });
+  review.onclick = () => {
+    chrome.tabs.create({url: "https://chrome.google.com/webstore/detail/chrome-audio-capture/kfokdmfpdnokpmpbjhjbcabgligoelgp/reviews"});
+  }
 })

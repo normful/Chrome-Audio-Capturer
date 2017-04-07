@@ -73,6 +73,7 @@ chrome.runtime.onMessage.addListener((request, sender) => {
     const startButton = document.getElementById('start');
     const finishButton = document.getElementById('finish');
     const cancelButton = document.getElementById('cancel');
+    console.log("hello");
     if(request.captureStarted && request.captureStarted === tabs[0].id) {
       chrome.storage.sync.get({
         maxTime: 1200000
