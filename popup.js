@@ -9,11 +9,13 @@ let timeLeft;
 // stopButton.innerHTML = "Stop Capture";
 // stopButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
 
-
 const displayStatus = function() {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     const status = document.getElementById("status");
     const timeRem = document.getElementById("timeRem");
+    const startButton = document.getElementById('start');
+    const finishButton = document.getElementById('finish');
+    const cancelButton = document.getElementById('cancel');
     if(tabs[0].url.toLowerCase().includes("youtube")) {
       status.innerHTML = "Capture is disabled on this site due to copyright";
     } else {
@@ -37,9 +39,10 @@ const displayStatus = function() {
               timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
             }, 1000);
           });
-          buttons.appendChild(stopButton);
+          finishButton.style.display = "block";
+          cancelButton.style.display = "block";
         } else {
-          buttons.appendChild(startButton);
+          startButton.style.display = "block";
         }
       });
     }
@@ -67,6 +70,9 @@ chrome.runtime.onMessage.addListener((request, sender) => {
     const status = document.getElementById("status");
     const timeRem = document.getElementById("timeRem");
     const buttons = document.getElementById("buttons");
+    const startButton = document.getElementById('start');
+    const finishButton = document.getElementById('finish');
+    const cancelButton = document.getElementById('cancel');
     if(request.captureStarted && request.captureStarted === tabs[0].id) {
       chrome.storage.sync.get({
         maxTime: 1200000
@@ -86,12 +92,14 @@ chrome.runtime.onMessage.addListener((request, sender) => {
           timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
         }, 1000);
       });
-      buttons.appendChild(stopButton);
-      buttons.removeChild(startButton);
+      finishButton.style.display = "block";
+      cancelButton.style.display = "block";
+      startButton.style.display = "none";
     } else if(request.captureStopped && request.captureStopped === tabs[0].id) {
       status.innerHTML = "";
-      buttons.appendChild(startButton);
-      buttons.removeChild(stopButton);
+      finishButton.style.display = "none";
+      cancelButton.style.display = "none";
+      startButton.style.display = "display";
       timeRem.innerHTML = "";
       clearInterval(interval);
     }
@@ -123,4 +131,5 @@ document.addEventListener('DOMContentLoaded', function() {
   options.onclick = () => {chrome.runtime.openOptionsPage()};
   const git = document.getElementById("GitHub");
   git.onclick = () => {chrome.tabs.create({url: "https://github.com/arblast/Chrome-Audio-Capturer"})};
+
 });

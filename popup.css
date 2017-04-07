@@ -67,6 +67,7 @@ li {
   border: 2px solid darkred;
   font-size: 16px;
   cursor: pointer;
+  background-color: lavenderblush;
 }
 
 .button:hover {
