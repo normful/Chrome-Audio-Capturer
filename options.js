@@ -7,14 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const wavSelect = document.getElementById('wav');
   const quality = document.getElementById("quality");
   const qualityLi = document.getElementById("qualityLi");
+  const limitRemoved = document.getElementById("removeLimit");
   let currentFormat;
   chrome.storage.sync.get({
     muteTab: false,
     maxTime: 1200000,
     format: "mp3",
-    quality: 192
+    quality: 192,
+    limitRemoved: false
   }, (options) => {
     mute.checked = options.muteTab;
+    limitRemoved.checked = options.limitRemoved;
     maxTime.value = options.maxTime/60000;
     currentFormat = options.format;
     if (options.format === "mp3") {
@@ -63,12 +66,21 @@ document.addEventListener('DOMContentLoaded', () => {
     status.innerHTML = "";
   }
 
+  limitRemoved.onchange = () => {
+    if(limitRemoved.checked) {
+      status.innerHTML = "WARNING: Recordings that are too long may not save properly!"
+    } else {
+      status.innerHTML = "";
+    }
+  }
+
   save.onclick = () => {
     chrome.storage.sync.set({
       muteTab: mute.checked,
       maxTime: maxTime.value*60000,
       format: currentFormat,
-      quality: quality.value
+      quality: quality.value,
+      limitRemoved: limitRemoved.checked
     });
     status.innerHTML = "Settings saved!"
   }

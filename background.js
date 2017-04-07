@@ -163,7 +163,7 @@ class Recorder {
 
 }
 
-const audioCapture = (timeLimit, muteTab, format, quality) => {
+const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
   chrome.tabCapture.capture({audio: true}, (stream) => {
     let startTabId;
     let timeout;
@@ -175,7 +175,11 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
     const source = audioCtx.createMediaStreamSource(stream);
     let mediaRecorder = new Recorder(source);
     mediaRecorder.setEncoding(format);
-    mediaRecorder.setOptions({timeLimit: timeLimit/1000});
+    if(limitRemoved) {
+      mediaRecorder.setOptions({timeLimit: 10800});
+    } else {
+      mediaRecorder.setOptions({timeLimit: timeLimit/1000});
+    }
     if(format === "mp3") {
       mediaRecorder.setOptions({mp3: {bitRate: quality}});
     }
@@ -248,6 +252,7 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
     }
 
     mediaRecorder.onTimeout = stopCapture;
+
     if(!muteTab) {
       let audio = new Audio();
       audio.srcObject = liveStream;
@@ -268,26 +273,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 const startCapture = function() {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    if(tabs[0].url.toLowerCase().includes("youtube")) {
-      chrome.tabs.create({url: "error.html"});
-    } else {
+    // if(tabs[0].url.toLowerCase().includes("youtube")) {
+    //   chrome.tabs.create({url: "error.html"});
+    // } else {
       if(!sessionStorage.getItem(tabs[0].id)) {
         sessionStorage.setItem(tabs[0].id, Date.now());
         chrome.storage.sync.get({
           maxTime: 1200000,
           muteTab: false,
           format: "mp3",
-          quality: 192
+          quality: 192,
+          limitRemoved: false
         }, (options) => {
           let time = options.maxTime;
           if(time > 1200000) {
             time = 1200000
           }
-          audioCapture(time, options.muteTab, options.format, options.quality);
+          audioCapture(time, options.muteTab, options.format, options.quality, options.limitRemoved);
         });
         chrome.runtime.sendMessage({captureStarted: tabs[0].id, startTime: Date.now()});
       }
-    }
+    // }
   });
 };
 

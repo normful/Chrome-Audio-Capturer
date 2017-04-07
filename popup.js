@@ -16,13 +16,14 @@ const displayStatus = function() {
     const startButton = document.getElementById('start');
     const finishButton = document.getElementById('finish');
     const cancelButton = document.getElementById('cancel');
-    if(tabs[0].url.toLowerCase().includes("youtube")) {
-      status.innerHTML = "Capture is disabled on this site due to copyright";
-    } else {
+    // if(tabs[0].url.toLowerCase().includes("youtube")) {
+    //   status.innerHTML = "Capture is disabled on this site due to copyright";
+    // } else {
       chrome.runtime.sendMessage({currentTab: tabs[0].id}, (response) => {
         if(response) {
           chrome.storage.sync.get({
-            maxTime: 1200000
+            maxTime: 1200000,
+            limitRemoved: false
           }, (options) => {
             if(options.maxTime > 1200000) {
               chrome.storage.sync.set({
@@ -33,11 +34,18 @@ const displayStatus = function() {
               timeLeft = options.maxTime - (Date.now() - response)
             }
             status.innerHTML = "Tab is currently being captured";
-            timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
-            interval = setInterval(() => {
-              timeLeft = timeLeft - 1000;
-              timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
-            }, 1000);
+            if(options.limitRemoved) {
+              timeRem.innerHTML = `${parseTime(Date.now() - response)}`;
+              interval = setInterval(() => {
+                timeRem.innerHTML = `${parseTime(Date.now() - response)}`;
+              });
+            } else {
+              timeRem.innerHTML = `${parseTime(timeLeft)} remaining`;
+              interval = setInterval(() => {
+                timeLeft = timeLeft - 1000;
+                timeRem.innerHTML = `${parseTime(timeLeft)} remaining`;
+              }, 1000);
+            }
           });
           finishButton.style.display = "block";
           cancelButton.style.display = "block";
@@ -45,7 +53,7 @@ const displayStatus = function() {
           startButton.style.display = "block";
         }
       });
-    }
+    // }
   });
 }
 
@@ -73,10 +81,10 @@ chrome.runtime.onMessage.addListener((request, sender) => {
     const startButton = document.getElementById('start');
     const finishButton = document.getElementById('finish');
     const cancelButton = document.getElementById('cancel');
-    console.log("hello");
     if(request.captureStarted && request.captureStarted === tabs[0].id) {
       chrome.storage.sync.get({
-        maxTime: 1200000
+        maxTime: 1200000,
+        limitRemoved: false
       }, (options) => {
         if(options.maxTime > 1200000) {
           chrome.storage.sync.set({
@@ -87,11 +95,18 @@ chrome.runtime.onMessage.addListener((request, sender) => {
           timeLeft = options.maxTime - (Date.now() - request.startTime)
         }
         status.innerHTML = "Tab is currently being captured";
-        timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
-        interval = setInterval(() => {
-          timeLeft = timeLeft - 1000;
-          timeRem.innerHTML = `${parseTime(timeLeft)} remaining`
-        }, 1000);
+        if(options.limitRemoved) {
+          timeRem.innerHTML = `${parseTime(Date.now() - request.startTime)}`;
+          interval = setInterval(() => {
+            timeRem.innerHTML = `${parseTime(Date.now() - request.startTime)}`
+          }, 1000);
+        } else {
+          timeRem.innerHTML = `${parseTime(timeLeft)} remaining`;
+          interval = setInterval(() => {
+            timeLeft = timeLeft - 1000;
+            timeRem.innerHTML = `${parseTime(timeLeft)} remaining`;
+          }, 1000);
+        }
       });
       finishButton.style.display = "block";
       cancelButton.style.display = "block";
