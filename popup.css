@@ -1,6 +1,7 @@
-body, h2, button {
+body, h2 {
   font-family: Ubuntu, sans-serif;
 }
+
 #status, #timeRem {
   margin: 10px auto;
   text-align: center;
@@ -34,15 +35,6 @@ li {
   margin: 0 0 0 5px;
 }
 
-button {
-  font-weight: bold;
-  font-size: 18px;
-  display: block;
-  margin: 10px auto;
-  width: 200px;
-  height: 40px;
-}
-
 .extra {
   font-family: sans-serif;
   white-space: nowrap;
@@ -61,4 +53,23 @@ button {
   color: blue;
   text-decoration: underline;
   cursor: pointer;
+}
+
+#buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.button {
+  /*display: none;*/
+  text-align: center;
+  padding: 10px;
+  border: 2px solid darkred;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.button:hover {
+  color: red;
+  background-color: darkred;
 }

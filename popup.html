@@ -8,13 +8,15 @@
     <div class="header"><img src="./icon.png"/> <h1>Chrome Audio Capture</h1></div>
     <div id="status"></div>
     <div id="timeRem"></div>
-    <div id="buttons"></div>
+    <div id="buttons">
+      <div class="button" id="start">Start Capture</div>
+      <div class="button" id="finish">Finish Capture</div>
+      <div class="button" id="cancel">Cancel Capture</div>
+    </div>
     <ul> Hotkeys:
       <li id="startKey">Ctrl/Command + Shift +   to start capture on current tab</li>
       <li id="endKey">Ctrl/Command + Shift + X to stop capture on current tab</li>
     </ul>
-    <p class="extra">Currently the max capture time is 20 minutes due to chrome memory constraints</p>
-    <p class="extra">Completed captures will be saved to the Chrome downloads folder</p>
     <div class="links">
       <p id="options">Options</p>
       <p id="GitHub">GitHub</p>

@@ -1,12 +1,17 @@
 let interval;
 let timeLeft;
-const startButton = document.createElement("button");
-startButton.innerHTML = "Start Capture"
-startButton.onclick = () => {chrome.runtime.sendMessage("startCapture")};
 
-const stopButton = document.createElement("button");
-stopButton.innerHTML = "Stop Capture";
-stopButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
+// const startButton = document.createElement("button");
+// startButton.innerHTML = "Start Capture"
+// startButton.onclick = () => {chrome.runtime.sendMessage("startCapture")};
+//
+// const stopButton = document.createElement("button");
+// stopButton.innerHTML = "Stop Capture";
+// stopButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
+
+const startButton = document.getElementById('start');
+const finishButton = document.getElementById('finish');
+const cancelButton = document.getElementById('cancel');
 
 const displayStatus = function() {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {

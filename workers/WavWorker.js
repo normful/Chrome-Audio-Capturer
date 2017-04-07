@@ -37,7 +37,7 @@ function record(buffer) {
   if (bufferCount++ < maxBuffers)
     if (encoder)
       encoder.encode(buffer);
-    else
+    else if(recBuffers)
       recBuffers.push(buffer);
   else
     self.postMessage({ command: "timeout" });
