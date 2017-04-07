@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveButton = document.getElementById('saveCapture');
   const closeButton = document.getElementById('close');
   const review = document.getElementById('review');
+  const status = document.getElementById('status');
   let format;
   let audioURL;
   let encoding = false;
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(request.type === "createTab") {
       format = request.format;
       let startID = request.startID;
+      status.innerHTML = "Please wait..."
       closeButton.onclick = () => {
         chrome.runtime.sendMessage({cancelEncodeID: startID});
         chrome.tabs.getCurrent((tab) => {
@@ -18,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if(request.audioURL) {
         encodeProgress.style.width = '100%';
+        status.innerHTML = "File is ready!"
         generateSave(request.audioURL);
       } else {
         encoding = true;
@@ -25,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if(request.type === "encodingComplete" && encoding) {
       encoding = false;
+      status.innerHTML = "File is ready!";
       encodeProgress.style.width = '100%';
       generateSave(request.audioURL);
     }
