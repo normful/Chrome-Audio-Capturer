@@ -35,6 +35,13 @@
 
 #saveCapture {
   display: none;
+}
+
+.buttonContainer {
+  display: flex;
+}
+
+.button {
   padding: 10px;
   border: 2px solid darkred;
   font-size: 16px;
@@ -44,7 +51,7 @@
   cursor: pointer;
 }
 
-#saveCapture:hover {
+.button:hover {
   color: red;
   background-color: darkred;
 }

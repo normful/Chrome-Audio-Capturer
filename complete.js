@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const encodeProgress = document.getElementById('encodeProgress');
   const saveButton = document.getElementById('saveCapture');
+  const closeButton = document.getElementById('close');
   const review = document.getElementById('review');
   let format;
   let audioURL;
@@ -8,6 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.type === "createTab") {
       format = request.format;
+      let startID = request.startID;
+      closeButton.onclick = () => {
+        chrome.runtime.sendMessage({cancelEncodeID: startID});
+        chrome.tabs.getCurrent((tab) => {
+          chrome.tabs.remove(tab.id);
+        });
+      }
       if(request.audioURL) {
         encodeProgress.style.width = '100%';
         generateSave(request.audioURL);
@@ -34,4 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
   review.onclick = () => {
     chrome.tabs.create({url: "https://chrome.google.com/webstore/detail/chrome-audio-capture/kfokdmfpdnokpmpbjhjbcabgligoelgp/reviews"});
   }
+
+
 })

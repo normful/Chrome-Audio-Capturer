@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, (options) => {
     mute.checked = options.muteTab;
     limitRemoved.checked = options.limitRemoved;
+    maxTime.disabled = options.limitRemoved;
     maxTime.value = options.maxTime/60000;
     currentFormat = options.format;
     if (options.format === "mp3") {
@@ -68,8 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   limitRemoved.onchange = () => {
     if(limitRemoved.checked) {
+      maxTime.disabled = true;
       status.innerHTML = "WARNING: Recordings that are too long may not save properly!"
     } else {
+      maxTime.disabled = false;
       status.innerHTML = "";
     }
   }

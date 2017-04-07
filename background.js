@@ -195,6 +195,10 @@ const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
         stopCapture();
       } else if (request === "cancelCapture") {
         cancelCapture();
+      } else if (request.cancelEncodeID) {
+        if(request.cancelEncodeID === startTabId && mediaRecorder) {
+          mediaRecorder.cancelEncoding();
+        }
       }
     }
     chrome.commands.onCommand.addListener(onStopCommand);
@@ -221,7 +225,7 @@ const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
           chrome.tabs.create({url: "complete.html"}, (tab) => {
             completeTabID = tab.id;
             let completeCallback = () => {
-              chrome.tabs.sendMessage(tab.id, {type: "createTab", format: format, audioURL});
+              chrome.tabs.sendMessage(tab.id, {type: "createTab", format: format, audioURL, startID: startTabId});
             }
             setTimeout(completeCallback, 500);
           });
