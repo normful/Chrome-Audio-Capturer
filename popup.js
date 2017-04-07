@@ -99,7 +99,7 @@ chrome.runtime.onMessage.addListener((request, sender) => {
       status.innerHTML = "";
       finishButton.style.display = "none";
       cancelButton.style.display = "none";
-      startButton.style.display = "display";
+      startButton.style.display = "block";
       timeRem.innerHTML = "";
       clearInterval(interval);
     }

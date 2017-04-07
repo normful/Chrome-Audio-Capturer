@@ -189,6 +189,8 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
     function onStopClick(request) {
       if(request === "stopCapture") {
         stopCapture();
+      } else if (request === "cancelCapture") {
+        cancelCapture();
       }
     }
     chrome.commands.onCommand.addListener(onStopCommand);
@@ -205,14 +207,12 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
         chrome.tabs.sendMessage(completeTabID, {type: "encodingProgress", progress: progress});
       }
     }
+
     const stopCapture = function() {
       let endTabId;
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         endTabId = tabs[0].id;
         if(mediaRecorder && startTabId === endTabId){
-          chrome.commands.onCommand.removeListener(onStopCommand);
-          chrome.runtime.onMessage.removeListener(onStopClick);
-          mediaRecorder.onTimeout = () => {};
           mediaRecorder.finishRecording();
           chrome.tabs.create({url: "complete.html"}, (tab) => {
             completeTabID = tab.id;
@@ -221,13 +221,32 @@ const audioCapture = (timeLimit, muteTab, format, quality) => {
             }
             setTimeout(completeCallback, 500);
           });
-          audioCtx.close();
-          liveStream.getAudioTracks()[0].stop();
-          sessionStorage.removeItem(endTabId);
-          chrome.runtime.sendMessage({captureStopped: endTabId});
+          closeStream(endTabId);
         }
       })
     }
+
+    const cancelCapture = function() {
+      let endTabId;
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        endTabId = tabs[0].id;
+        if(mediaRecorder && startTabId === endTabId){
+          mediaRecorder.cancelRecording();
+          closeStream(endTabId);
+        }
+      })
+    }
+
+    const closeStream = function(endTabId) {
+      chrome.commands.onCommand.removeListener(onStopCommand);
+      chrome.runtime.onMessage.removeListener(onStopClick);
+      mediaRecorder.onTimeout = () => {};
+      audioCtx.close();
+      liveStream.getAudioTracks()[0].stop();
+      sessionStorage.removeItem(endTabId);
+      chrome.runtime.sendMessage({captureStopped: endTabId});
+    }
+
     mediaRecorder.onTimeout = stopCapture;
     if(!muteTab) {
       let audio = new Audio();
