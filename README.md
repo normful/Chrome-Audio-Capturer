@@ -1,6 +1,6 @@
 # Chrome Audio Capture
 
-Chrome Audio Capture is a Chrome extension that allows users to capture any audio playing on the current tab. Multiple tabs can be captured simultaneously. Completed captures will be downloaded to the chrome downloads folder and will be saved as .wav files. Users will have the option to mute tabs that are currently being captured.
+Chrome Audio Capture is a Chrome extension that allows users to capture any audio playing on the current tab. Multiple tabs can be captured simultaneously. Completed captures will be downloaded to the chrome downloads folder and will be saved as .wav or .mp3 files. Users will have the option to mute tabs that are currently being captured.
 
 Chrome Audio Capture is available in the [Chrome Store](https://chrome.google.com/webstore/detail/chrome-audio-capture/kfokdmfpdnokpmpbjhjbcabgligoelgp)
 
@@ -24,6 +24,17 @@ Interface during capture
 
 [capturing]: ./docs/capturing.png
 
+## Options
+
+![options]
+
+[options]: ./docs/options.png
+
+Several options are able to be changed in the extension:
+- 'Mute tabs that are being captured' allows the extension to force any tabs currently being captured to be muted on the system's audio output, but still have its audio captured and encoded to the resulting file.
+- 'Maximum capture time' changes the amount of time the extension will capture audio for before timing out, and has a limit to prevent exceeding Chrome's memory limit.
+- 'Output file format' allows users to choose whether the resulting file will be encoded into .wav or .mp3
+- 'MP3 Quality' is only applicable for .mp3 encodings, and will change the bitrate of the encode. (Low: 96 kbps, Medium: 192 kbps, High: 320 kbps)
 
 ## Implementation Details
 
@@ -72,10 +83,6 @@ chrome.storage.sync.get({
   }
 });
 ```
-
-![options]
-
-[options]: ./docs/options.png
 
 ### Future Work
 
