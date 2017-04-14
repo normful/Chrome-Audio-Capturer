@@ -4,21 +4,25 @@ Chrome Audio Capture is a Chrome extension that allows users to capture any audi
 
 Chrome Audio Capture is available in the [Chrome Store](https://chrome.google.com/webstore/detail/chrome-audio-capture/kfokdmfpdnokpmpbjhjbcabgligoelgp)
 
-Hotkeys:
- - Ctrl/Command + Shift + S: Start capture on current tab
- - Ctrl/Command + Shift + X: Stop capture on current tab
+Hotkeys for Windows:
+ - Ctrl + Shift + S: Start capture on current tab
+ - Ctrl + Shift + X: Stop capture on current tab
+
+Hotkeys for MAC:
+ - Command + Shift + U: Start capture on current tab
+ - Command + Shift + X: Stop capture on current tab
 
  The main interface of the extension
 
 ![start]
 
-[start]: ./docs/CAC_ss.png
+[start]: ./docs/main.png
 
 Interface during capture
 
 ![capturing]
 
-[capturing]: ./docs/CAC_cap_ss.png
+[capturing]: ./docs/capturing.png
 
 
 ## Implementation Details
@@ -71,9 +75,9 @@ chrome.storage.sync.get({
 
 ![options]
 
-[options]: ./docs/CAC_options_ss.png
+[options]: ./docs/options.png
 
 ### Future Work
 
-- [ ] Having more options for output file format
+- [ ] Ability to cut parts of the audio off before saving
 - [ ] Ability to pause and resume captures
