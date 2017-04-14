@@ -164,18 +164,18 @@ class Recorder {
 }
 
 const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
-  chrome.tabCapture.capture({audio: true}, (stream) => {
-    let startTabId;
+  chrome.tabCapture.capture({audio: true}, (stream) => { // sets up stream for capture
+    let startTabId; //tab when the capture is started
     let timeout;
-    let completeTabID;
-    let audioURL = null;
-    chrome.tabs.query({active:true, currentWindow: true}, (tabs) => startTabId = tabs[0].id)
+    let completeTabID; //tab when the capture is stopped
+    let audioURL = null; //resulting object when encoding is completed
+    chrome.tabs.query({active:true, currentWindow: true}, (tabs) => startTabId = tabs[0].id) //saves start tab
     const liveStream = stream;
     const audioCtx = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
-    let mediaRecorder = new Recorder(source);
-    mediaRecorder.setEncoding(format);
-    if(limitRemoved) {
+    let mediaRecorder = new Recorder(source); //initiates the recorder based on the current stream
+    mediaRecorder.setEncoding(format); //sets encoding based on options
+    if(limitRemoved) { //removes time limit
       mediaRecorder.setOptions({timeLimit: 10800});
     } else {
       mediaRecorder.setOptions({timeLimit: timeLimit/1000});
@@ -185,12 +185,12 @@ const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
     }
     mediaRecorder.startRecording();
 
-    function onStopCommand(command) {
+    function onStopCommand(command) { //keypress
       if (command === "stop") {
         stopCapture();
       }
     }
-    function onStopClick(request) {
+    function onStopClick(request) { //click on popup
       if(request === "stopCapture") {
         stopCapture();
       } else if (request === "cancelCapture") {
