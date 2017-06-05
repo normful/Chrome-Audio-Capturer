@@ -54,6 +54,24 @@ label {
   margin-left: 15px;
 }
 
+.button {
+  padding: 10px;
+  border: 2px solid darkred;
+  font-size: 16px;
+  background-color: lavenderblush;
+  font-weight: bold;
+  margin: 10px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 110px;
+  border-radius: 5px;
+}
+
+.button:hover {
+  color: red;
+  background-color: darkred;
+}
+
 #save {
   font-size: 16px;
   margin-left: 50px;
