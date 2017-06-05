@@ -84,4 +84,5 @@ li {
 .notes {
   padding: 10px;
   font-size: 12px;
+  white-space: pre;
 }
