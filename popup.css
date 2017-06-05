@@ -80,3 +80,8 @@ li {
   color: red;
   background-color: darkred;
 }
+
+.notes {
+  padding: 10px;
+  font-size: 12px;
+}
