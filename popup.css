@@ -74,6 +74,7 @@ li {
   font-weight: bold;
   cursor: pointer;
   background-color: lavenderblush;
+  border-radius: 5px;
 }
 
 .button:hover {
