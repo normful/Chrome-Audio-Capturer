@@ -1,4 +1,4 @@
-const extend = function() {
+const extend = function() { //helper function to merge objects
   let target = arguments[0],
       sources = [].slice.call(arguments, 1);
   for (let i = 0; i < sources.length; ++i) {
@@ -44,7 +44,7 @@ const CONFIGS = {
 
 class Recorder {
 
-  constructor(source, configs) {
+  constructor(source, configs) { //creates audio context from the source and connects it to the worker
     extend(this, CONFIGS, configs || {});
     this.context = source.context;
     if (this.context.createScriptProcessor == null)
@@ -218,6 +218,7 @@ const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
 
     const stopCapture = function() {
       let endTabId;
+      //check to make sure the current tab is the tab being captured
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         endTabId = tabs[0].id;
         if(mediaRecorder && startTabId === endTabId){
@@ -245,6 +246,7 @@ const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
       })
     }
 
+//removes the audio context and closes recorder to save memory
     const closeStream = function(endTabId) {
       chrome.commands.onCommand.removeListener(onStopCommand);
       chrome.runtime.onMessage.removeListener(onStopClick);
@@ -265,6 +267,9 @@ const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
   });
 }
 
+
+
+//sends reponses to and from the popup menu
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.currentTab && sessionStorage.getItem(request.currentTab)) {
     sendResponse(sessionStorage.getItem(request.currentTab));
@@ -277,6 +282,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 const startCapture = function() {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    // CODE TO BLOCK CAPTURE ON YOUTUBE, DO NOT REMOVE
     // if(tabs[0].url.toLowerCase().includes("youtube")) {
     //   chrome.tabs.create({url: "error.html"});
     // } else {
