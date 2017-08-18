@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
           chrome.tabs.remove(tab.id);
         });
       }
+
+      //if the encoding completed before the page has loaded
       if(request.audioURL) {
         encodeProgress.style.width = '100%';
         status.innerHTML = "File is ready!"
@@ -26,16 +28,19 @@ document.addEventListener('DOMContentLoaded', () => {
         encoding = true;
       }
     }
+
+    //when encoding completes
     if(request.type === "encodingComplete" && encoding) {
       encoding = false;
       status.innerHTML = "File is ready!";
       encodeProgress.style.width = '100%';
       generateSave(request.audioURL);
     }
+    //updates encoding process bar upon messages
     if(request.type === "encodingProgress" && encoding) {
       encodeProgress.style.width = `${request.progress * 100}%`;
     }
-    function generateSave(url) {
+    function generateSave(url) { //creates the save button
       const currentDate = new Date(Date.now()).toDateString();
       saveButton.onclick = () => {
         chrome.downloads.download({url: url, filename: `${currentDate}.${format}`, saveAs: true});

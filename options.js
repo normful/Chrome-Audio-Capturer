@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const qualityLi = document.getElementById("qualityLi");
   const limitRemoved = document.getElementById("removeLimit");
   let currentFormat;
+  //initial settings
   chrome.storage.sync.get({
     muteTab: false,
     maxTime: 1200000,
