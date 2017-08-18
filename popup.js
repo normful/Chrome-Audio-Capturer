@@ -1,21 +1,14 @@
 let interval;
 let timeLeft;
 
-// const startButton = document.createElement("button");
-// startButton.innerHTML = "Start Capture"
-// startButton.onclick = () => {chrome.runtime.sendMessage("startCapture")};
-//
-// const stopButton = document.createElement("button");
-// stopButton.innerHTML = "Stop Capture";
-// stopButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
-
-const displayStatus = function() {
+const displayStatus = function() { //function to handle the display of time and buttons
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     const status = document.getElementById("status");
     const timeRem = document.getElementById("timeRem");
     const startButton = document.getElementById('start');
     const finishButton = document.getElementById('finish');
     const cancelButton = document.getElementById('cancel');
+    //CODE TO BLOCK CAPTURE ON YOUTUBE, DO NOT DELETE
     // if(tabs[0].url.toLowerCase().includes("youtube")) {
     //   status.innerHTML = "Capture is disabled on this site due to copyright";
     // } else {
@@ -57,7 +50,7 @@ const displayStatus = function() {
   });
 }
 
-const parseTime = function(time) {
+const parseTime = function(time) { //function to display time remaining or time elapsed
   let minutes = Math.floor((time/1000)/60);
   let seconds = Math.floor((time/1000) % 60);
   if (minutes < 10 && minutes >= 0) {
@@ -73,6 +66,7 @@ const parseTime = function(time) {
   return `${minutes}:${seconds}`
 }
 
+//manipulation of the displayed buttons upon message from background
 chrome.runtime.onMessage.addListener((request, sender) => {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     const status = document.getElementById("status");
@@ -123,7 +117,7 @@ chrome.runtime.onMessage.addListener((request, sender) => {
 });
 
 
-
+//initial display for popup menu when opened
 document.addEventListener('DOMContentLoaded', function() {
   displayStatus();
   const startKey = document.getElementById("startKey");
