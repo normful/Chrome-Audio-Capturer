@@ -22,7 +22,7 @@ const WORKER_FILE = {
 const CONFIGS = {
   workerDir: "/workers/",     // worker scripts dir (end with /)
   numChannels: 2,     // number of channels
-  encoding: "wav",    // encoding (can be changed at runtime)
+  encoding: "mp3",    // encoding (can be changed at runtime)
 
   // runtime options
   options: {
@@ -37,7 +37,7 @@ const CONFIGS = {
     },
     mp3: {
       mimeType: "audio/mpeg",
-      bitRate: 192            // (CBR only): bit rate = [64 .. 320]
+      bitRate: 320            // (CBR only): bit rate = [64 .. 320]
     }
   }
 };
@@ -283,7 +283,7 @@ const startCapture = function() {
           maxTime: 1200000,
           muteTab: false,
           format: "mp3",
-          quality: 192,
+          quality: 320,
           limitRemoved: false
         }, (options) => {
           let time = options.maxTime;
