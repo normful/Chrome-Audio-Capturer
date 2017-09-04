@@ -186,7 +186,7 @@ const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
     mediaRecorder.startRecording();
 
     function onStopCommand(command) { //keypress
-      if (command === "stop") {
+      if (command === "stopCaptureByShortcut") {
         stopCapture();
       }
     }
@@ -300,7 +300,7 @@ const startCapture = function() {
 
 
 chrome.commands.onCommand.addListener((command) => {
-  if (command === "start") {
+  if (command === "startCaptureByShortcut") {
     startCapture();
   }
 });

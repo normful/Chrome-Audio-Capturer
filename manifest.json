@@ -25,14 +25,14 @@
     "storage"
   ],
   "commands": {
-    "start": {
+    "startCaptureByShortcut": {
       "suggested_key": {
         "default": "Ctrl+Shift+S",
         "mac": "Command+Shift+U"
       },
       "description": "Start Capture"
     },
-    "stop": {
+    "stopCaptureByShortcut": {
       "suggested_key": {
         "default": "Ctrl+Shift+X",
         "mac": "MacCtrl+Shift+X"
