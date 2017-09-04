@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const startButton = document.getElementById('start');
   const finishButton = document.getElementById('finish');
   const cancelButton = document.getElementById('cancel');
-  startButton.onclick = () => {chrome.runtime.sendMessage("startCapture")};
+  startButton.onclick = () => {chrome.runtime.sendMessage("startCaptureFromPopupButton")};
   finishButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
   cancelButton.onclick = () => {chrome.runtime.sendMessage("cancelCapture")};
   chrome.runtime.getPlatformInfo((info) => {

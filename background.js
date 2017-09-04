@@ -206,7 +206,7 @@ const audioCapture = (timeLimit, muteTab, format, quality, limitRemoved) => {
     mediaRecorder.onComplete = (recorder, blob) => {
       audioURL = window.URL.createObjectURL(blob);
       if(completeTabID) {
-        chrome.tabs.sendMessage(completeTabID, {type: "encodingComplete", audioURL, format});
+        chrome.tabs.sendMessage(completeTabID, {type: "encodingComplete", audioURL, format, startTabId});
       }
       mediaRecorder = null;
     }
@@ -266,7 +266,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse(sessionStorage.getItem(request.currentTab));
   } else if (request.currentTab){
     sendResponse(false);
-  } else if (request === "startCapture") {
+  } else if (request === "startCaptureFromPopupButton") {
     startCapture();
   }
 });
