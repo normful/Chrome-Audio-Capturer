@@ -128,15 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
   startButton.onclick = () => {chrome.runtime.sendMessage("startCaptureFromPopupButton")};
   finishButton.onclick = () => {chrome.runtime.sendMessage("stopCapture")};
   cancelButton.onclick = () => {chrome.runtime.sendMessage("cancelCapture")};
-  chrome.runtime.getPlatformInfo((info) => {
-    if(info.os === "mac") {
-      startKey.innerHTML = "Command + Shift + U to start capture on current tab";
-      endKey.innerHTML = "Command + Shift + X to stop capture on current tab";
-    } else {
-      startKey.innerHTML = "Ctrl + Shift + S to start capture on current tab";
-      endKey.innerHTML = "Ctrl + Shift + X to stop capture on current tab";
-    }
-  })
   const options = document.getElementById("options");
   options.onclick = () => {chrome.runtime.openOptionsPage()};
   const git = document.getElementById("GitHub");

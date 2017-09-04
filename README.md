@@ -9,8 +9,8 @@ Hotkeys for Windows:
  - Ctrl + Shift + X: Stop capture on current tab
 
 Hotkeys for MAC:
- - Command + Shift + U: Start capture on current tab
- - Command + Shift + X: Stop capture on current tab
+ - Control + A: Start capture on current tab
+ - Control + Z: Stop capture on current tab
 
  The main interface of the extension
 
