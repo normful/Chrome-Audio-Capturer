@@ -27,15 +27,15 @@
   "commands": {
     "startCaptureByShortcut": {
       "suggested_key": {
-        "default": "Ctrl+Shift+S",
-        "mac": "MacCtrl+A"
+        "default": "Ctrl+Shift+U",
+        "mac": "MacCtrl+U"
       },
       "description": "Start Capture"
     },
     "stopCaptureByShortcut": {
       "suggested_key": {
-        "default": "Ctrl+Shift+X",
-        "mac": "MacCtrl+Z"
+        "default": "Ctrl+Shift+I",
+        "mac": "MacCtrl+I"
       },
       "description": "Stop Capture"
     }
