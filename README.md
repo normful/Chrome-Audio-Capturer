@@ -88,3 +88,5 @@ chrome.storage.sync.get({
 
 - [ ] Ability to cut parts of the audio off before saving
 - [ ] Ability to pause and resume captures
+
+
